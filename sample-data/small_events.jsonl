@@ -1,0 +1,2 @@
+{"eventId":"evt-1","timestamp":"2026-03-19T10:00:00Z","transactionId":"tx-1","customerId":"c-1","userEmail":"alice@example.com","merchantId":"m-1","amount":"120.50","currency":"pln","status":"SUCCESS","paymentMethod":"CARD"}
+{"eventId":"evt-2","timestamp":"bad-date","transactionId":"tx-2","customerId":"c-2","userEmail":"bob@example.com","merchantId":"m-2","amount":"-20","currency":"eur","status":"FAILED","paymentMethod":"BLIK"}

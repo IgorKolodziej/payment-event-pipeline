@@ -1,5 +1,24 @@
 *.class
 *.log
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# sbt / Scala
+target/
+project/target/
+project/project/
+
+# IDE
+.metals/
+.bsp/
+.vscode/
+.idea/
+
+# virtual machine crash logs
 hs_err_pid*
+
+# env / local config
+.env
+.env.local
+application.local.conf
+
+# OS files
+.DS_Store
