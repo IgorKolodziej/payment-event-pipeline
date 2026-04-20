@@ -1,19 +1,14 @@
 # Payment Event Processing Pipeline
-Scala application that processes payment events.
 
-The system will:
-- read input events from JSONL files
-- parse and validate records
-- normalize data
-- enrich events with customer data from PostgreSQL
-- detect anomalies / risk signals
-- save processed results to MongoDB
-- generate a summary report
-- later expose basic statistics for a dashboard
+Scala 3 team project for a local payment-event processing pipeline.
 
-## Tech stack
-- Scala 3
-- sbt
+This repository currently contains a verified development scaffold plus the implementation contract in [project-spec.md](project-spec.md). The pipeline itself is still being implemented.
+
+## Frozen Baseline
+
+- JDK `25`
+- Scala `3.3.7`
+- sbt `1.12.5`
 - Cats Effect
 - FS2
 - Circe
@@ -22,81 +17,54 @@ The system will:
 - MongoDB
 - MUnit
 
+## Current Status
+
+The repository is ready for implementation work:
+
+- build toolchain is configured,
+- PostgreSQL and MongoDB start locally,
+- PostgreSQL seed data loads,
+- sample input data exists,
+- formatting works,
+- tests run,
+- the current app entry point is a placeholder.
+
 ## Team
+
 - Igor Kołodziej
 - Hubert Kowalski
 - Kacper Wadas
 - Oliwia Strzechowska
 - Roksana Rogalska
 
-## Repository setup
-Before you start coding, make sure you have installed:
-- JDK 17+
-- sbt
-- Docker + Docker Compose
+## Local Setup
 
-## First-time local setup
-1. Copy environment variables:
+Requirements:
+
+- JDK `25`
+- sbt `1.12.5`
+- Docker
+- Docker Compose
+
+First-time setup:
+
 ```bash
 cp .env.example .env
-```
-
-2. Start local databases:
-
-```bash
 docker compose up -d
-```
-
-3. Run the application:
-
-```bash
 set -a && source .env && set +a && sbt run
 ```
 
-4. Run tests:
+Useful commands:
 
 ```bash
 sbt test
-```
-
-5. Format the code:
-
-```bash
 sbt scalafmt
 sbt Test/scalafmt
-```
-
-## Useful commands
-
-Start databases:
-
-```bash
-docker compose up -d
-```
-
-Stop databases:
-
-```bash
-docker compose down
-```
-
-Stop databases and remove volumes:
-
-```bash
-docker compose down -v
-```
-
-Check running containers:
-
-```bash
 docker compose ps -a
-```
-
-Show logs:
-
-```bash
 docker compose logs postgres
 docker compose logs mongo
+docker compose down
+docker compose down -v
 ```
 
 Open PostgreSQL shell:
@@ -111,13 +79,15 @@ Open Mongo shell:
 docker compose exec mongo mongosh
 ```
 
-## Important notes
-* `.env` is local and should **not** be committed.
-* `.env.example` stays in the repository.
-* PostgreSQL seed data is loaded from `scripts/seed_postgres.sql`.
-* Sample input data is stored in `sample-data/`.
+## Repository Notes
 
-## Project structure
+- `.env` is local and must not be committed.
+- `scripts/seed_postgres.sql` seeds the local customer table.
+- `sample-data/` contains example input data.
+- `out/` is used for generated run artifacts.
+- `project-spec.md` is the implementation source of truth.
+
+## Current Repository Layout
 
 ```text
 payment-event-pipeline/
@@ -125,35 +95,33 @@ payment-event-pipeline/
 ├── docker-compose.yml
 ├── .env.example
 ├── .scalafmt.conf
+├── project-spec.md
 ├── scripts/
 │   └── seed_postgres.sql
 ├── sample-data/
-├── src/
-│   ├── main/
-│   │   ├── resources/
-│   │   │   └── application.conf
-│   │   └── scala/com/team/pipeline/
-│   │       ├── Main.scala
-│   │       ├── domain/
-│   │       ├── parsing/
-│   │       ├── validation/
-│   │       ├── customer/
-│   │       ├── risk/
-│   │       ├── persistence/
-│   │       ├── reporting/
-│   │       └── pipeline/
-│   └── test/
-│       └── scala/com/team/pipeline/
+│   └── small_events.jsonl
+├── out/
+│   └── .gitkeep
+└── src/
+    ├── main/
+    │   ├── resources/
+    │   │   └── application.conf
+    │   └── scala/com/team/pipeline/
+    │       └── Main.scala
+    └── test/
+        └── scala/com/team/pipeline/
+            └── PilotTest.scala
 ```
 
-## Workflow rules
+## Workflow Rules
 
-* Work on your own feature branch, not directly on `main`.
-* Keep commits small and readable.
-* Format code before committing.
-* Run tests before pushing.
-* Do not commit local secrets or random generated files.
-* If you change shared models or contracts, tell the team first.
+- Work on short-lived feature branches.
+- Keep commits focused and readable.
+- Format before committing.
+- Run tests before opening a PR.
+- Do not commit secrets or generated output files.
+- Keep the code aligned with `project-spec.md`.
 
 ## License
-This project is licensed under the Apache License 2.0.
+
+Apache License 2.0.

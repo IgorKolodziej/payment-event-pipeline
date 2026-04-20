@@ -20,5 +20,9 @@ hs_err_pid*
 .env.local
 application.local.conf
 
+# generated pipeline artifacts
+out/*
+!out/.gitkeep
+
 # OS files
 .DS_Store
