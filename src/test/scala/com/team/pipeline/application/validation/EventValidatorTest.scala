@@ -3,11 +3,18 @@ package com.team.pipeline.application.validation
 import cats.data.NonEmptyChain
 import cats.data.Validated.Invalid
 import cats.data.Validated.Valid
+import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.InvalidAmount
+import com.team.pipeline.domain.InvalidCurrency
+import com.team.pipeline.domain.InvalidMerchantCategory
+import com.team.pipeline.domain.InvalidPaymentChannel
+import com.team.pipeline.domain.InvalidPaymentMethod
 import com.team.pipeline.domain.InvalidStatus
 import com.team.pipeline.domain.InvalidTimestamp
-import com.team.pipeline.domain.NoPaymentMethodSelected
+import com.team.pipeline.domain.InvalidTransactionCountry
+import com.team.pipeline.domain.MerchantCategory
+import com.team.pipeline.domain.PaymentChannel
 import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.domain.RawPaymentEvent
 import munit.FunSuite
@@ -20,10 +27,14 @@ class EventValidatorTest extends FunSuite:
     timestamp = "2026-04-24T10:00:00Z",
     customerId = 10,
     amount = BigDecimal("150.00"),
-    status = 0,
-    hasBlik = 1,
-    hasCard = 0,
-    hasTransfer = 1
+    currency = "PLN",
+    status = "SUCCESS",
+    paymentMethod = "BLIK",
+    transactionCountry = "PL",
+    merchantId = "M001",
+    merchantCategory = "GROCERY",
+    channel = "MOBILE",
+    deviceId = "device-001"
   )
 
   test("valid raw event produces normalized payment event") {
@@ -35,8 +46,14 @@ class EventValidatorTest extends FunSuite:
         assertEquals(event.timestamp, Instant.parse("2026-04-24T10:00:00Z"))
         assertEquals(event.customerId, 10)
         assertEquals(event.amount, BigDecimal("150.00"))
+        assertEquals(event.currency, Currency.PLN)
         assertEquals(event.status, EventStatus.Success)
-        assertEquals(event.paymentMethods, Set(PaymentMethod.Blik, PaymentMethod.Transfer))
+        assertEquals(event.paymentMethod, PaymentMethod.Blik)
+        assertEquals(event.transactionCountry, "PL")
+        assertEquals(event.merchantId, "M001")
+        assertEquals(event.merchantCategory, MerchantCategory.Grocery)
+        assertEquals(event.channel, PaymentChannel.Mobile)
+        assertEquals(event.deviceId, "device-001")
       case Invalid(errors) =>
         fail(s"Expected validation to succeed, but got: $errors")
   }
@@ -60,20 +77,20 @@ class EventValidatorTest extends FunSuite:
   }
 
   test("invalid status is reported") {
-    val raw = validRaw.copy(status = 2)
+    val raw = validRaw.copy(status = "unknown")
 
     assertEquals(
       EventValidator.validateAndNormalize(raw),
-      Invalid(NonEmptyChain.one(InvalidStatus(2)))
+      Invalid(NonEmptyChain.one(InvalidStatus("UNKNOWN")))
     )
   }
 
-  test("no selected payment method is reported") {
-    val raw = validRaw.copy(hasBlik = 0, hasCard = 0, hasTransfer = 0)
+  test("invalid payment method is reported") {
+    val raw = validRaw.copy(paymentMethod = "cash")
 
     assertEquals(
       EventValidator.validateAndNormalize(raw),
-      Invalid(NonEmptyChain.one(NoPaymentMethodSelected))
+      Invalid(NonEmptyChain.one(InvalidPaymentMethod("CASH")))
     )
   }
 
@@ -81,10 +98,12 @@ class EventValidatorTest extends FunSuite:
     val raw = validRaw.copy(
       timestamp = "bad-date-format",
       amount = BigDecimal("-5.00"),
-      status = 3,
-      hasBlik = 0,
-      hasCard = 0,
-      hasTransfer = 0
+      currency = "xyz",
+      status = "unknown",
+      paymentMethod = "cash",
+      transactionCountry = "POL",
+      merchantCategory = "crypto",
+      channel = "atm"
     )
 
     EventValidator.validateAndNormalize(raw) match
@@ -94,8 +113,12 @@ class EventValidatorTest extends FunSuite:
           List(
             InvalidTimestamp("bad-date-format"),
             InvalidAmount(BigDecimal("-5.00")),
-            InvalidStatus(3),
-            NoPaymentMethodSelected
+            InvalidCurrency("XYZ"),
+            InvalidStatus("UNKNOWN"),
+            InvalidPaymentMethod("CASH"),
+            InvalidTransactionCountry("POL"),
+            InvalidMerchantCategory("CRYPTO"),
+            InvalidPaymentChannel("ATM")
           )
         )
       case Valid(event) =>
