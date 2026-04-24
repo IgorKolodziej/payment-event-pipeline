@@ -48,9 +48,11 @@ class EventEnricherTest extends FunSuite:
   }
 
   test("enrichOption enriches existing customer") {
-    val enriched = EventEnricher.enrichOption(event, Some(customer), "test-salt")
+    val salt = "test-salt"
+    val enriched = EventEnricher.enrichOption(event, Some(customer), salt)
+    val expected = Right(EventEnricher.enrich(event, customer, salt))
 
-    assert(enriched.isRight)
+    assertEquals(enriched, expected)
   }
 
   test("enrichOption returns CustomerNotFound for missing customer") {

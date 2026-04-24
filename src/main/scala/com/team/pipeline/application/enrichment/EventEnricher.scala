@@ -4,6 +4,7 @@ import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.domain.CustomerProfile
 import com.team.pipeline.domain.CustomerNotFound
 import com.team.pipeline.domain.EnrichedPaymentEvent
+import com.team.pipeline.domain.EnrichmentError
 import com.team.pipeline.domain.NormalizedPaymentEvent
 
 object EventEnricher:
@@ -12,17 +13,31 @@ object EventEnricher:
       customer: CustomerProfile,
       emailSalt: String
   ): EnrichedPaymentEvent =
+    enrich(event, customer, EmailHasher.sha256(emailSalt))
+
+  def enrich(
+      event: NormalizedPaymentEvent,
+      customer: CustomerProfile,
+      emailHasher: EmailHasher
+  ): EnrichedPaymentEvent =
     EnrichedPaymentEvent(
       event = event,
       customer = customer,
-      hashedCustomerEmail = EmailHasher.sha256(emailSalt).hash(customer.email)
+      hashedCustomerEmail = emailHasher.hash(customer.email)
     )
 
   def enrichOption(
       event: NormalizedPaymentEvent,
       customer: Option[CustomerProfile],
       emailSalt: String
-  ): Either[CustomerNotFound, EnrichedPaymentEvent] =
+  ): Either[EnrichmentError, EnrichedPaymentEvent] =
+    enrichOption(event, customer, EmailHasher.sha256(emailSalt))
+
+  def enrichOption(
+      event: NormalizedPaymentEvent,
+      customer: Option[CustomerProfile],
+      emailHasher: EmailHasher
+  ): Either[EnrichmentError, EnrichedPaymentEvent] =
     customer match
-      case Some(profile) => Right(enrich(event, profile, emailSalt))
+      case Some(profile) => Right(enrich(event, profile, emailHasher))
       case None          => Left(CustomerNotFound(event.customerId))
