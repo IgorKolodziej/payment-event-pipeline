@@ -7,10 +7,14 @@ final case class RawPaymentEvent(
     timestamp: String,
     customerId: Int,
     amount: BigDecimal,
-    status: Int,
-    hasBlik: Int,
-    hasCard: Int,
-    hasTransfer: Int
+    currency: String,
+    status: String,
+    paymentMethod: String,
+    transactionCountry: String,
+    merchantId: String,
+    merchantCategory: String,
+    channel: String,
+    deviceId: String
 )
 
 final case class NormalizedPaymentEvent(
@@ -18,8 +22,14 @@ final case class NormalizedPaymentEvent(
     timestamp: Instant,
     customerId: Int,
     amount: BigDecimal,
+    currency: Currency,
     status: EventStatus,
-    paymentMethods: Set[PaymentMethod]
+    paymentMethod: PaymentMethod,
+    transactionCountry: String,
+    merchantId: String,
+    merchantCategory: MerchantCategory,
+    channel: PaymentChannel,
+    deviceId: String
 )
 
 final case class CustomerProfile(
@@ -35,7 +45,8 @@ final case class CustomerProfile(
     age: Int,
     gender: String,
     lastLoginCountry: String,
-    fraudBefore: Boolean
+    fraudBefore: Boolean,
+    createdAt: Instant
 )
 
 final case class EnrichedPaymentEvent(
@@ -54,8 +65,14 @@ final case class ProcessedEvent(
     customerId: Int,
     timestamp: Instant,
     amount: BigDecimal,
+    currency: Currency,
     status: EventStatus,
-    paymentMethods: Set[PaymentMethod],
+    paymentMethod: PaymentMethod,
+    transactionCountry: String,
+    merchantId: String,
+    merchantCategory: MerchantCategory,
+    channel: PaymentChannel,
+    deviceId: String,
     customerCountry: String,
     hashedCustomerEmail: String,
     riskScore: Int
