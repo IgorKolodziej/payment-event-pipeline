@@ -40,6 +40,14 @@ class EventNormalizerTest extends FunSuite:
     )
   }
 
+  test("normalizeEnumKey: trims and lowercases") {
+    assertEquals(EventNormalizer.normalizeEnumKey("  SUCCESS  "), "success")
+  }
+
+  test("normalizeCurrencyCode: trims and uppercases") {
+    assertEquals(EventNormalizer.normalizeCurrencyCode("  pln  "), "PLN")
+  }
+
   test("normalizeTimestamp: invalid instant yields InvalidTimestamp") {
     val out = EventNormalizer.normalizeTimestamp("not-a-timestamp")
     assertEquals(out, Left(InvalidTimestamp("not-a-timestamp")))

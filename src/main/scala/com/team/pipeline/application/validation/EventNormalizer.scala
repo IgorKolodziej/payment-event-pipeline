@@ -41,6 +41,23 @@ object EventNormalizer:
         paymentMethods = methods
       )
 
+  /** Normalizes a generic enum-like input representation.
+    *
+    * This is intended for string inputs like "success", "SUCCESS", " Success ", etc.
+    *
+    * The returned key is case-normalized and trimmed, but the mapping is owned by the caller.
+    */
+  def normalizeEnumKey(value: String): String =
+    value.trim.toLowerCase
+
+  /** Normalizes currency codes.
+    *
+    * Domain currency is currently represented as a string (no Currency enum in the domain model
+    * yet). This helper enforces uppercase and trimming.
+    */
+  def normalizeCurrencyCode(value: String): String =
+    value.trim.toUpperCase
+
   def normalizeTimestamp(value: String): Either[ValidationError, Instant] =
     Try(Instant.parse(value)).toEither.left.map(_ => InvalidTimestamp(value))
 
