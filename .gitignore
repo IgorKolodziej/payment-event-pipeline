@@ -26,3 +26,5 @@ out/*
 
 # OS files
 .DS_Store
+
+.llm_context/
