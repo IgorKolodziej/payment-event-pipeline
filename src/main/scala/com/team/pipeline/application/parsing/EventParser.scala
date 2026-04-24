@@ -37,7 +37,7 @@ object EventParser:
   private def missingField(error: DecodingFailure): Option[MissingField] =
     error.message match
       case message if message.startsWith("Missing required field") =>
-        error.pathToRoot.collectFirst { case DownField(field) =>
+        error.history.collectFirst { case DownField(field) =>
           MissingField(field)
         }
       case _ =>
