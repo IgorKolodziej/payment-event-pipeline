@@ -14,14 +14,15 @@ object EmailHasher:
 
   /** Default implementation using SHA-256.
     *
-    * Hash format: hex( SHA-256( normalize(email) + ":" + salt ) )
+    * Hash format: hex( SHA-256( normalize(email) || salt ) )
     */
   def sha256(salt: String): EmailHasher = new EmailHasher:
     override def hash(email: String): String =
       val normalized = normalizeEmail(email)
-      val payload = s"$normalized:$salt"
       val digest = MessageDigest.getInstance("SHA-256")
-      val bytes = digest.digest(payload.getBytes(StandardCharsets.UTF_8))
+      digest.update(normalized.getBytes(StandardCharsets.UTF_8))
+      digest.update(salt.getBytes(StandardCharsets.UTF_8))
+      val bytes = digest.digest()
       toHex(bytes)
 
   /** Email normalization for deterministic hashing.
