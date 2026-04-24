@@ -8,7 +8,7 @@ import munit.FunSuite
 class EventParserTest extends FunSuite:
   test("parses valid payment event line") {
     val line =
-      """{"eventId":1,"timestamp":"2026-04-24T10:00:00Z","customerId":1,"amount":150.00,"status":0,"has_blik":1,"has_card":0,"has_transfer":0}"""
+      """{"eventId":1,"timestamp":"2026-04-24T10:00:00Z","customerId":1,"amount":150.00,"currency":"PLN","status":"SUCCESS","paymentMethod":"BLIK","transactionCountry":"PL","merchantId":"M001","merchantCategory":"GROCERY","channel":"MOBILE","deviceId":"device-001"}"""
 
     assertEquals(
       EventParser.parseLine(line),
@@ -18,24 +18,32 @@ class EventParserTest extends FunSuite:
           timestamp = "2026-04-24T10:00:00Z",
           customerId = 1,
           amount = BigDecimal("150.00"),
-          status = 0,
-          hasBlik = 1,
-          hasCard = 0,
-          hasTransfer = 0
+          currency = "PLN",
+          status = "SUCCESS",
+          paymentMethod = "BLIK",
+          transactionCountry = "PL",
+          merchantId = "M001",
+          merchantCategory = "GROCERY",
+          channel = "MOBILE",
+          deviceId = "device-001"
         )
       )
     )
   }
 
-  test("maps snake_case payment method fields to camelCase domain fields") {
+  test("parses transaction context fields") {
     val line =
-      """{"eventId":19,"timestamp":"2026-04-24T11:30:00Z","customerId":44,"amount":5000.00,"status":0,"has_blik":1,"has_card":1,"has_transfer":0}"""
+      """{"eventId":19,"timestamp":"2026-04-24T11:30:00Z","customerId":44,"amount":5000.00,"currency":"EUR","status":"FAILED","paymentMethod":"TRANSFER","transactionCountry":"DE","merchantId":"M019","merchantCategory":"TRAVEL","channel":"WEB","deviceId":"device-044-1"}"""
 
     EventParser.parseLine(line) match
       case Right(parsed) =>
-        assertEquals(parsed.hasBlik, 1)
-        assertEquals(parsed.hasCard, 1)
-        assertEquals(parsed.hasTransfer, 0)
+        assertEquals(parsed.currency, "EUR")
+        assertEquals(parsed.status, "FAILED")
+        assertEquals(parsed.paymentMethod, "TRANSFER")
+        assertEquals(parsed.transactionCountry, "DE")
+        assertEquals(parsed.merchantCategory, "TRAVEL")
+        assertEquals(parsed.channel, "WEB")
+        assertEquals(parsed.deviceId, "device-044-1")
       case Left(error) =>
         fail(s"Expected parseLine to succeed, but got: $error")
   }
@@ -50,7 +58,7 @@ class EventParserTest extends FunSuite:
 
   test("returns MissingField for missing required field") {
     val line =
-      """{"eventId":1,"timestamp":"2026-04-24T10:00:00Z","amount":150.00,"status":0,"has_blik":1,"has_card":0,"has_transfer":0}"""
+      """{"eventId":1,"timestamp":"2026-04-24T10:00:00Z","amount":150.00,"currency":"PLN","status":"SUCCESS","paymentMethod":"BLIK","transactionCountry":"PL","merchantId":"M001","merchantCategory":"GROCERY","channel":"MOBILE","deviceId":"device-001"}"""
 
     assertEquals(EventParser.parseLine(line), Left(MissingField("customerId")))
   }
