@@ -2,9 +2,11 @@ package com.team.pipeline.application.validation
 
 import cats.data.ValidatedNec
 import cats.syntax.all.*
+import com.team.pipeline.domain.DataError
 import com.team.pipeline.domain.InvalidAmount
 import com.team.pipeline.domain.NormalizedPaymentEvent
 import com.team.pipeline.domain.RawPaymentEvent
+import com.team.pipeline.domain.RejectedEvent
 import com.team.pipeline.domain.ValidationError
 
 object EventValidator:
@@ -26,6 +28,18 @@ object EventValidator:
         paymentMethods = paymentMethods
       )
     }
+
+  def toRejected(
+      lineNumber: Long,
+      raw: RawPaymentEvent,
+      reason: DataError
+  ): RejectedEvent =
+    RejectedEvent(
+      lineNumber = lineNumber,
+      eventId = Some(raw.eventId),
+      customerId = Some(raw.customerId),
+      reason = reason
+    )
 
   private def validateTimestamp(raw: RawPaymentEvent) =
     EventNormalizer.normalizeTimestamp(raw.timestamp).toValidatedNec
