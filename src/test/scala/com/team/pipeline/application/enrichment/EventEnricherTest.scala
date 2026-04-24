@@ -3,8 +3,11 @@ package com.team.pipeline.application.enrichment
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.domain.CustomerNotFound
 import com.team.pipeline.domain.CustomerProfile
+import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.EventStatus
+import com.team.pipeline.domain.MerchantCategory
 import com.team.pipeline.domain.NormalizedPaymentEvent
+import com.team.pipeline.domain.PaymentChannel
 import com.team.pipeline.domain.PaymentMethod
 import munit.FunSuite
 
@@ -16,8 +19,14 @@ class EventEnricherTest extends FunSuite:
     timestamp = Instant.parse("2026-04-24T10:00:00Z"),
     customerId = 10,
     amount = BigDecimal("150.00"),
+    currency = Currency.PLN,
     status = EventStatus.Success,
-    paymentMethods = Set(PaymentMethod.Blik)
+    paymentMethod = PaymentMethod.Blik,
+    transactionCountry = "PL",
+    merchantId = "M001",
+    merchantCategory = MerchantCategory.Grocery,
+    channel = PaymentChannel.Mobile,
+    deviceId = "device-001"
   )
 
   private val customer = CustomerProfile(
@@ -33,7 +42,8 @@ class EventEnricherTest extends FunSuite:
     age = 38,
     gender = "F",
     lastLoginCountry = "PL",
-    fraudBefore = false
+    fraudBefore = false,
+    createdAt = Instant.parse("2021-06-18T10:00:00Z")
   )
 
   test("enrich creates enriched payment event with hashed customer email") {

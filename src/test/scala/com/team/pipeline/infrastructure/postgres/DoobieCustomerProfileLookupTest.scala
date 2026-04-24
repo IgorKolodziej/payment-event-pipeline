@@ -3,6 +3,9 @@ package com.team.pipeline.infrastructure.postgres
 import com.team.pipeline.domain.PaymentMethod
 import munit.FunSuite
 
+import java.time.Instant
+import java.time.LocalDateTime
+
 class DoobieCustomerProfileLookupTest extends FunSuite:
   test("maps customer row flags to customer profile") {
     val row = DoobieCustomerProfileLookup.CustomerRow(
@@ -20,7 +23,8 @@ class DoobieCustomerProfileLookupTest extends FunSuite:
       age = 38,
       gender = "F",
       lastLoginCountry = "PL",
-      fraudBefore = 0
+      fraudBefore = 0,
+      createdAt = LocalDateTime.parse("2021-06-18T10:00:00")
     )
 
     val profile = row.toDomain
@@ -28,5 +32,6 @@ class DoobieCustomerProfileLookupTest extends FunSuite:
     assertEquals(profile.customerId, 10)
     assertEquals(profile.allowedPaymentMethods, Set(PaymentMethod.Blik, PaymentMethod.Transfer))
     assertEquals(profile.fraudBefore, false)
+    assertEquals(profile.createdAt, Instant.parse("2021-06-18T10:00:00Z"))
   }
 end DoobieCustomerProfileLookupTest

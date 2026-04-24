@@ -8,6 +8,9 @@ import doobie.Read
 import doobie.Transactor
 import doobie.implicits.*
 
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+
 final class DoobieCustomerProfileLookup(transactor: Transactor[IO])
     extends CustomerProfileLookup:
   import DoobieCustomerProfileLookup.CustomerRow
@@ -30,7 +33,8 @@ final class DoobieCustomerProfileLookup(transactor: Transactor[IO])
         age,
         gender,
         last_login_country,
-        fraud_before
+        fraud_before,
+        created_at
       FROM customers
       WHERE id = $customerId
     """
@@ -55,7 +59,8 @@ object DoobieCustomerProfileLookup:
       Int,
       String,
       String,
-      Int
+      Int,
+      LocalDateTime
   )
 
   private[postgres] final case class CustomerRow(
@@ -73,7 +78,8 @@ object DoobieCustomerProfileLookup:
       age: Int,
       gender: String,
       lastLoginCountry: String,
-      fraudBefore: Int
+      fraudBefore: Int,
+      createdAt: LocalDateTime
   ):
     def toDomain: CustomerProfile =
       CustomerProfile(
@@ -93,7 +99,8 @@ object DoobieCustomerProfileLookup:
         age = age,
         gender = gender,
         lastLoginCountry = lastLoginCountry,
-        fraudBefore = fraudBefore == 1
+        fraudBefore = fraudBefore == 1,
+        createdAt = createdAt.toInstant(ZoneOffset.UTC)
       )
 
   private[postgres] given Read[CustomerRow] =
