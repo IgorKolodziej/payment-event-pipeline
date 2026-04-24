@@ -63,8 +63,8 @@ object EventNormalizer:
 
   def normalizeStatus(value: Int): Either[ValidationError, EventStatus] =
     value match
-      case 1     => Right(EventStatus.Success)
-      case 0     => Right(EventStatus.Failed)
+      case 0     => Right(EventStatus.Success)
+      case 1     => Right(EventStatus.Failed)
       case other => Left(InvalidStatus(other))
 
   def normalizePaymentMethodFlags(
