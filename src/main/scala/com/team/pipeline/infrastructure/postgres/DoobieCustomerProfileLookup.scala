@@ -7,6 +7,7 @@ import com.team.pipeline.ports.CustomerProfileLookup
 import doobie.Read
 import doobie.Transactor
 import doobie.implicits.*
+import doobie.implicits.javatimedrivernative.JavaLocalDateTimeMeta
 
 import java.time.LocalDateTime
 import java.time.ZoneOffset
