@@ -13,15 +13,19 @@ import io.circe.parser.decode
 
 object EventParser:
   given Decoder[RawPaymentEvent] =
-    Decoder.forProduct8(
+    Decoder.forProduct12(
       "eventId",
       "timestamp",
       "customerId",
       "amount",
+      "currency",
       "status",
-      "has_blik",
-      "has_card",
-      "has_transfer"
+      "paymentMethod",
+      "transactionCountry",
+      "merchantId",
+      "merchantCategory",
+      "channel",
+      "deviceId"
     )(RawPaymentEvent.apply)
 
   def parseLine(line: String): Either[ParseError, RawPaymentEvent] =

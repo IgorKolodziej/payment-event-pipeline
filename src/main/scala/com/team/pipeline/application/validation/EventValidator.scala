@@ -16,17 +16,37 @@ object EventValidator:
     (
       validateTimestamp(raw),
       validateAmount(raw),
+      validateCurrency(raw),
       validateStatus(raw),
-      validatePaymentMethods(raw)
-    ).mapN { case (timestamp, amount, status, paymentMethods) =>
-      NormalizedPaymentEvent(
-        eventId = raw.eventId,
-        timestamp = timestamp,
-        customerId = raw.customerId,
-        amount = amount,
-        status = status,
-        paymentMethods = paymentMethods
-      )
+      validatePaymentMethod(raw),
+      validateTransactionCountry(raw),
+      validateMerchantCategory(raw),
+      validateChannel(raw)
+    ).mapN {
+      case (
+            timestamp,
+            amount,
+            currency,
+            status,
+            paymentMethod,
+            transactionCountry,
+            merchantCategory,
+            channel
+          ) =>
+        NormalizedPaymentEvent(
+          eventId = raw.eventId,
+          timestamp = timestamp,
+          customerId = raw.customerId,
+          amount = amount,
+          currency = currency,
+          status = status,
+          paymentMethod = paymentMethod,
+          transactionCountry = transactionCountry,
+          merchantId = raw.merchantId.trim,
+          merchantCategory = merchantCategory,
+          channel = channel,
+          deviceId = raw.deviceId.trim
+        )
     }
 
   def toRejected(
@@ -48,10 +68,20 @@ object EventValidator:
     if raw.amount > 0 then raw.amount.validNec
     else InvalidAmount(raw.amount).invalidNec
 
+  private def validateCurrency(raw: RawPaymentEvent) =
+    EventNormalizer.normalizeCurrency(raw.currency).toValidatedNec
+
   private def validateStatus(raw: RawPaymentEvent) =
     EventNormalizer.normalizeStatus(raw.status).toValidatedNec
 
-  private def validatePaymentMethods(raw: RawPaymentEvent) =
-    EventNormalizer
-      .normalizePaymentMethodFlags(raw.hasBlik, raw.hasCard, raw.hasTransfer)
-      .toValidatedNec
+  private def validatePaymentMethod(raw: RawPaymentEvent) =
+    EventNormalizer.normalizePaymentMethod(raw.paymentMethod).toValidatedNec
+
+  private def validateTransactionCountry(raw: RawPaymentEvent) =
+    EventNormalizer.normalizeCountry(raw.transactionCountry).toValidatedNec
+
+  private def validateMerchantCategory(raw: RawPaymentEvent) =
+    EventNormalizer.normalizeMerchantCategory(raw.merchantCategory).toValidatedNec
+
+  private def validateChannel(raw: RawPaymentEvent) =
+    EventNormalizer.normalizeChannel(raw.channel).toValidatedNec
