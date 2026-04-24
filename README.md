@@ -2,7 +2,7 @@
 
 Scala 3 team project for a local payment-event processing pipeline.
 
-This repository currently contains a verified development scaffold plus the implementation contract in [project-spec.md](project-spec.md). The pipeline itself is still being implemented.
+This repository currently contains a verified development scaffold and the first implementation foundations. Internal planning notes are kept locally outside Git.
 
 ## Frozen Baseline
 
@@ -27,7 +27,7 @@ The repository is ready for implementation work:
 - sample input data exists,
 - formatting works,
 - tests run,
-- the current app entry point is a placeholder.
+- the app entry point loads typed configuration and prepares the output directory.
 
 ## Team
 
@@ -85,7 +85,7 @@ docker compose exec mongo mongosh
 - `scripts/seed_postgres.sql` seeds the local customer table.
 - `sample-data/` contains example input data.
 - `out/` is used for generated run artifacts.
-- `project-spec.md` is the implementation source of truth.
+- internal planning and issue notes are local-only and must not be committed.
 
 ## Current Repository Layout
 
@@ -95,7 +95,6 @@ payment-event-pipeline/
 ├── docker-compose.yml
 ├── .env.example
 ├── .scalafmt.conf
-├── project-spec.md
 ├── scripts/
 │   └── seed_postgres.sql
 ├── sample-data/
@@ -107,10 +106,14 @@ payment-event-pipeline/
     │   ├── resources/
     │   │   └── application.conf
     │   └── scala/com/team/pipeline/
-    │       └── Main.scala
+    │       ├── Main.scala
+    │       └── config/
+    │           └── AppConfig.scala
     └── test/
         └── scala/com/team/pipeline/
-            └── PilotTest.scala
+            ├── PilotTest.scala
+            └── config/
+                └── AppConfigTest.scala
 ```
 
 ## Workflow Rules
@@ -120,7 +123,7 @@ payment-event-pipeline/
 - Format before committing.
 - Run tests before opening a PR.
 - Do not commit secrets or generated output files.
-- Keep the code aligned with `project-spec.md`.
+- Keep code changes small, tested, and aligned with the agreed project scope.
 
 ## License
 
