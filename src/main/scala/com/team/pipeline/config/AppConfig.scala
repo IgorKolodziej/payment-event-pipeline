@@ -24,7 +24,10 @@ final case class PostgresConfig(
     user: String,
     password: String,
     driver: String
-)
+):
+  override def toString: String =
+    s"PostgresConfig(host=$host, port=$port, database=$database, user=$user, " +
+      s"password=****, driver=$driver)"
 
 final case class MongoConfig(
     host: String,
@@ -39,25 +42,29 @@ object AppConfig:
     IO.blocking(ConfigFactory.load().resolve()).map(fromConfig)
 
   def fromConfig(config: Config): AppConfig =
+    val app = config.getConfig("app")
+    val postgres = config.getConfig("postgres")
+    val mongo = config.getConfig("mongo")
+
     AppConfig(
       app = AppSettings(
-        inputFile = Path.of(config.getString("app.inputFile")),
-        outputDir = Path.of(config.getString("app.outputDir")),
-        emailSalt = config.getString("app.emailSalt")
+        inputFile = Path.of(app.getString("inputFile")),
+        outputDir = Path.of(app.getString("outputDir")),
+        emailSalt = app.getString("emailSalt")
       ),
       postgres = PostgresConfig(
-        host = config.getString("postgres.host"),
-        port = config.getInt("postgres.port"),
-        database = config.getString("postgres.database"),
-        user = config.getString("postgres.user"),
-        password = config.getString("postgres.password"),
-        driver = config.getString("postgres.driver")
+        host = postgres.getString("host"),
+        port = postgres.getInt("port"),
+        database = postgres.getString("database"),
+        user = postgres.getString("user"),
+        password = postgres.getString("password"),
+        driver = postgres.getString("driver")
       ),
       mongo = MongoConfig(
-        host = config.getString("mongo.host"),
-        port = config.getInt("mongo.port"),
-        database = config.getString("mongo.database"),
-        processedCollection = config.getString("mongo.processedCollection"),
-        alertsCollection = config.getString("mongo.alertsCollection")
+        host = mongo.getString("host"),
+        port = mongo.getInt("port"),
+        database = mongo.getString("database"),
+        processedCollection = mongo.getString("processedCollection"),
+        alertsCollection = mongo.getString("alertsCollection")
       )
     )
