@@ -1,22 +1,23 @@
 DROP TABLE IF EXISTS customers;
 
 CREATE TABLE customers (
-    id INT PRIMARY KEY,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    email VARCHAR(255),
-    country VARCHAR(10),
-    balance DECIMAL(15, 2),
-    daily_limit DECIMAL(15, 2),
-    has_blik INT,
-    has_card INT,
-    has_transfer INT,
-    is_active BOOLEAN,
-    age INT,
-    gender CHAR(1),
-    last_login_country VARCHAR(10),
-    fraud_before INT,
-    created_at TIMESTAMP
+    id INT PRIMARY KEY CHECK (id > 0),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    country CHAR(2) NOT NULL CHECK (char_length(country) = 2),
+    balance DECIMAL(15, 2) NOT NULL CHECK (balance >= 0),
+    daily_limit DECIMAL(15, 2) NOT NULL CHECK (daily_limit > 0),
+    has_blik INT NOT NULL CHECK (has_blik IN (0, 1)),
+    has_card INT NOT NULL CHECK (has_card IN (0, 1)),
+    has_transfer INT NOT NULL CHECK (has_transfer IN (0, 1)),
+    is_active BOOLEAN NOT NULL,
+    age INT NOT NULL CHECK (age BETWEEN 18 AND 120),
+    gender CHAR(1) NOT NULL CHECK (gender IN ('F', 'M')),
+    last_login_country CHAR(2) NOT NULL CHECK (char_length(last_login_country) = 2),
+    fraud_before INT NOT NULL CHECK (fraud_before IN (0, 1)),
+    created_at TIMESTAMP NOT NULL,
+    CHECK (has_blik + has_card + has_transfer >= 1)
 );
 
 
