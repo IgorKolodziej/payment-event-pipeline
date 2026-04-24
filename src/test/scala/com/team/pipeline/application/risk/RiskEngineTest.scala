@@ -67,9 +67,11 @@ class RiskEngineTest extends FunSuite:
   )
 
   private def assess(
-      enrichedEvent: EnrichedPaymentEvent
+      enrichedEvent: EnrichedPaymentEvent,
+      riskContext: CustomerRiskContext = context,
+      policy: RiskPolicy = RiskPolicy.default
   ): RiskAssessment =
-    RiskEngine.evaluate(enrichedEvent, context, RiskPolicy.default)
+    RiskEngine.evaluate(enrichedEvent, riskContext, policy)
 
   private def enrichedWith(
       normalizedEvent: NormalizedPaymentEvent = event,
@@ -201,14 +203,108 @@ class RiskEngineTest extends FunSuite:
     )
   }
 
+  test("evaluate flags cumulative daily limit exceeded") {
+    val riskContext =
+      context.copy(approvedAmountLast24h = BigDecimal("4900.00"))
+
+    assertSingleAlert(
+      assess(enriched, riskContext),
+      alertType = AlertType.CumulativeLimitExceeded,
+      riskScore = 35,
+      decision = RiskDecision.Approve
+    )
+  }
+
+  test("evaluate flags velocity spike") {
+    val riskContext =
+      context.copy(transactionCountLastHour = RiskPolicy.default.velocityTransactionThreshold - 1)
+
+    assertSingleAlert(
+      assess(enriched, riskContext),
+      alertType = AlertType.VelocitySpike,
+      riskScore = 30,
+      decision = RiskDecision.Approve
+    )
+  }
+
+  test("evaluate flags failed attempt burst") {
+    val riskContext =
+      context.copy(failedAttemptCountLastHour = RiskPolicy.default.failedAttemptThreshold - 1)
+    val normalizedEvent = event.copy(status = EventStatus.Failed)
+
+    assertSingleAlert(
+      assess(enrichedWith(normalizedEvent = normalizedEvent), riskContext),
+      alertType = AlertType.FailedAttemptBurst,
+      riskScore = 30,
+      decision = RiskDecision.Approve
+    )
+  }
+
+  test("evaluate flags repeated late-night activity") {
+    val riskContext =
+      context.copy(lateNightTransactionCountLast7d = RiskPolicy.default.lateNightThreshold - 1)
+    val normalizedEvent =
+      event.copy(timestamp = Instant.parse("2026-04-24T02:30:00Z"))
+
+    assertAlerts(
+      assess(enrichedWith(normalizedEvent = normalizedEvent), riskContext),
+      alertTypes = List(
+        AlertType.LateNightTransaction,
+        AlertType.RepeatedLateNightActivity
+      ),
+      riskScore = 30,
+      decision = RiskDecision.Approve
+    )
+  }
+
+  test("evaluate flags high-risk new device") {
+    val riskContext = context.copy(knownDevice = false, firstSeenDeviceAt = None)
+    val normalizedEvent = event.copy(amount = BigDecimal("4500.00"))
+
+    assertSingleAlert(
+      assess(enrichedWith(normalizedEvent = normalizedEvent), riskContext),
+      alertType = AlertType.NewDeviceHighRisk,
+      riskScore = 20,
+      decision = RiskDecision.Approve
+    )
+  }
+
+  test("evaluate flags amount outlier") {
+    val riskContext = context.copy(
+      averageAmount30d = Some(BigDecimal("100.00")),
+      amountStddev30d = Some(BigDecimal("10.00")),
+      historySize30d = RiskPolicy.default.amountOutlierMinHistory
+    )
+
+    assertSingleAlert(
+      assess(enriched, riskContext),
+      alertType = AlertType.AmountOutlier,
+      riskScore = 25,
+      decision = RiskDecision.Approve
+    )
+  }
+
   private def assertSingleAlert(
       assessment: RiskAssessment,
       alertType: AlertType,
       riskScore: Int,
       decision: RiskDecision
   ): Unit =
+    assertAlerts(
+      assessment,
+      alertTypes = List(alertType),
+      riskScore = riskScore,
+      decision = decision
+    )
+
+  private def assertAlerts(
+      assessment: RiskAssessment,
+      alertTypes: List[AlertType],
+      riskScore: Int,
+      decision: RiskDecision
+  ): Unit =
     assertEquals(assessment.riskScore, riskScore)
     assertEquals(assessment.decision, decision)
-    assertEquals(assessment.alerts.map(_.alertType), List(alertType))
-    assertEquals(assessment.alerts.map(_.riskScore), List(riskScore))
+    assertEquals(assessment.alerts.map(_.alertType), alertTypes)
+    assertEquals(assessment.alerts.map(_.riskScore).sum, riskScore)
 end RiskEngineTest
