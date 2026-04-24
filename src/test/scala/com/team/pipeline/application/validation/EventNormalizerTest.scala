@@ -19,7 +19,7 @@ class EventNormalizerTest extends FunSuite:
     timestamp = "2024-01-01T10:15:30Z",
     customerId = 10,
     amount = BigDecimal(12.34),
-    status = 1,
+    status = 0,
     hasBlik = 1,
     hasCard = 0,
     hasTransfer = 1
@@ -56,6 +56,10 @@ class EventNormalizerTest extends FunSuite:
   test("normalizeStatus: unknown status yields InvalidStatus") {
     val out = EventNormalizer.normalizeStatus(2)
     assertEquals(out, Left(InvalidStatus(2)))
+  }
+
+  test("normalizeStatus: failed status is represented as 1") {
+    assertEquals(EventNormalizer.normalizeStatus(1), Right(EventStatus.Failed))
   }
 
   test(
