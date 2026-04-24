@@ -43,8 +43,7 @@ class EventParserTest extends FunSuite:
 
     assert(result match
       case Left(InvalidJson(_)) => true
-      case _                   => false
-    )
+      case _                    => false)
   }
 
   test("returns MissingField for missing required field") {
