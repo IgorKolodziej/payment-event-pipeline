@@ -57,6 +57,7 @@ final case class EnrichedPaymentEvent(
 
 final case class RiskAssessment(
     riskScore: Int,
+    decision: RiskDecision,
     alerts: List[Alert]
 )
 
@@ -75,7 +76,8 @@ final case class ProcessedEvent(
     deviceId: String,
     customerCountry: String,
     hashedCustomerEmail: String,
-    riskScore: Int
+    riskScore: Int,
+    riskDecision: RiskDecision
 )
 
 final case class Alert(

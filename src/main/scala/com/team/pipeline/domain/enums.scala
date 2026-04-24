@@ -15,6 +15,9 @@ enum MerchantCategory:
 enum PaymentChannel:
   case Mobile, Web, Pos
 
+enum RiskDecision:
+  case Approve, Review, Block
+
 enum AlertType:
   case InactiveCustomer
   case LimitExceeded
@@ -22,3 +25,10 @@ enum AlertType:
   case PreviouslyFlaggedCustomer
   case CountryMismatch
   case NewAccountHighAmount
+  case LateNightTransaction
+  case CumulativeLimitExceeded
+  case VelocitySpike
+  case FailedAttemptBurst
+  case RepeatedLateNightActivity
+  case NewDeviceHighRisk
+  case AmountOutlier
