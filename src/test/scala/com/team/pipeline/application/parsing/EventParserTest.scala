@@ -31,11 +31,13 @@ class EventParserTest extends FunSuite:
     val line =
       """{"eventId":19,"timestamp":"2026-04-24T11:30:00Z","customerId":44,"amount":5000.00,"status":0,"has_blik":1,"has_card":1,"has_transfer":0}"""
 
-    val parsed = EventParser.parseLine(line).toOption.get
-
-    assertEquals(parsed.hasBlik, 1)
-    assertEquals(parsed.hasCard, 1)
-    assertEquals(parsed.hasTransfer, 0)
+    EventParser.parseLine(line) match
+      case Right(parsed) =>
+        assertEquals(parsed.hasBlik, 1)
+        assertEquals(parsed.hasCard, 1)
+        assertEquals(parsed.hasTransfer, 0)
+      case Left(error) =>
+        fail(s"Expected parseLine to succeed, but got: $error")
   }
 
   test("returns InvalidJson for malformed JSON") {
