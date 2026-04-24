@@ -20,3 +20,5 @@ enum AlertType:
   case LimitExceeded
   case InvalidPaymentMethod
   case PreviouslyFlaggedCustomer
+  case CountryMismatch
+  case NewAccountHighAmount
