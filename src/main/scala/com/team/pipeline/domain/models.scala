@@ -113,20 +113,3 @@ final case class RejectedEvent(
     customerId: Option[Int],
     reason: DataError
 )
-
-final case class RunSummary(
-    totalRead: Int,
-    totalProcessed: Int,
-    totalRejected: Int,
-    totalAlerts: Int,
-    errorCounts: Map[String, Int],
-    alertCounts: Map[String, Int]
-)
-
-final case class DashboardSnapshot(
-    totalProcessed: Int,
-    totalRejected: Int,
-    totalAlerts: Int,
-    alertCounts: Map[String, Int],
-    topCountries: Map[String, Int]
-)
