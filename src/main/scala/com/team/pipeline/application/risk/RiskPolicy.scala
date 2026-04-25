@@ -11,7 +11,12 @@ final case class RiskPolicy(
     lateNightEndHour: Int,
     lateNightThreshold: Int,
     amountOutlierMinHistory: Int,
-    amountOutlierStddevMultiplier: BigDecimal
+    amountOutlierStddevMultiplier: BigDecimal,
+    seniorAgeThreshold: Int,
+    seniorMethodShiftMinHistory: Int,
+    seniorMethodShiftMinRecentCount: Int,
+    seniorMethodShiftMultiplier: BigDecimal,
+    seniorMethodShiftScore: Int
 )
 
 object RiskPolicy:
@@ -26,5 +31,10 @@ object RiskPolicy:
     lateNightEndHour = 5,
     lateNightThreshold = 3,
     amountOutlierMinHistory = 5,
-    amountOutlierStddevMultiplier = BigDecimal("3.0")
+    amountOutlierStddevMultiplier = BigDecimal("3.0"),
+    seniorAgeThreshold = 70,
+    seniorMethodShiftMinHistory = 20,
+    seniorMethodShiftMinRecentCount = 3,
+    seniorMethodShiftMultiplier = BigDecimal("3.0"),
+    seniorMethodShiftScore = 15
   )

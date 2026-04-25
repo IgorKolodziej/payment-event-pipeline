@@ -62,7 +62,10 @@ class RiskEngineTest extends FunSuite:
     knownDevice = true,
     averageAmount30d = None,
     amountStddev30d = None,
-    historySize30d = 0
+    historySize30d = 0,
+    blikTransferCountLast24h = 0,
+    blikTransferCountLast30d = 0,
+    totalTransactionCountLast30d = 0
   )
 
   private def assess(
@@ -254,6 +257,70 @@ class RiskEngineTest extends FunSuite:
     )
   }
 
+  test("evaluate does not flag senior method shift when customer is not senior") {
+    val riskContext = context.copy(
+      blikTransferCountLast24h = 6,
+      blikTransferCountLast30d = 10,
+      totalTransactionCountLast30d = 40
+    )
+
+    assertEquals(
+      assess(enrichedWith(profile = customer.copy(age = 65)), riskContext).alerts.exists(
+        _.alertType == AlertType.SeniorMethodShiftAnomaly
+      ),
+      false
+    )
+  }
+
+  test("evaluate does not flag senior method shift for stable baseline usage") {
+    val profile = customer.copy(age = 75)
+    val riskContext = context.copy(
+      blikTransferCountLast24h = 3,
+      blikTransferCountLast30d = 90,
+      totalTransactionCountLast30d = 120
+    )
+
+    assertEquals(
+      assess(enrichedWith(profile = profile), riskContext).alerts.exists(
+        _.alertType == AlertType.SeniorMethodShiftAnomaly
+      ),
+      false
+    )
+  }
+
+  test("evaluate flags senior method shift anomaly on abrupt Blik spike") {
+    val profile = customer.copy(age = 75)
+    val riskContext = context.copy(
+      blikTransferCountLast24h = 4,
+      blikTransferCountLast30d = 30,
+      totalTransactionCountLast30d = 120
+    )
+
+    assertSingleAlert(
+      assess(enrichedWith(profile = profile), riskContext),
+      alertType = AlertType.SeniorMethodShiftAnomaly,
+      riskScore = RiskPolicy.default.seniorMethodShiftScore,
+      decision = RiskDecision.Approve
+    )
+  }
+
+  test("evaluate does not flag senior method shift when method is Card") {
+    val profile = customer.copy(age = 78)
+    val normalizedEvent = event.copy(paymentMethod = PaymentMethod.Card)
+    val riskContext = context.copy(
+      blikTransferCountLast24h = 6,
+      blikTransferCountLast30d = 20,
+      totalTransactionCountLast30d = 100
+    )
+
+    assertEquals(
+      assess(enrichedWith(normalizedEvent, profile), riskContext).alerts.exists(
+        _.alertType == AlertType.SeniorMethodShiftAnomaly
+      ),
+      false
+    )
+  }
+
   test("evaluate returns deterministic multi-alert score and block decision") {
     val normalizedEvent = event.copy(
       timestamp = Instant.parse("2026-04-24T02:30:00Z"),
@@ -312,7 +379,7 @@ class RiskEngineTest extends FunSuite:
       riskScore: Int,
       decision: RiskDecision
   ): Unit =
-    val actualAlertTypes   = assessment.alerts.map(_.alertType).sortBy(_.toString)
+    val actualAlertTypes = assessment.alerts.map(_.alertType).sortBy(_.toString)
     val expectedAlertTypes = alertTypes.sortBy(_.toString)
 
     assertEquals(assessment.riskScore, riskScore)

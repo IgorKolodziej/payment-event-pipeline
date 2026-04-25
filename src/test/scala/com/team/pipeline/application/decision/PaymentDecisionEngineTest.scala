@@ -58,7 +58,10 @@ class PaymentDecisionEngineTest extends FunSuite:
     knownDevice = true,
     averageAmount30d = None,
     amountStddev30d = None,
-    historySize30d = 0
+    historySize30d = 0,
+    blikTransferCountLast24h = 0,
+    blikTransferCountLast30d = 0,
+    totalTransactionCountLast30d = 0
   )
 
   private def enrichedWith(

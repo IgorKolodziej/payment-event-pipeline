@@ -41,3 +41,4 @@ enum AlertType:
   case RepeatedLateNightActivity
   case NewDeviceHighRisk
   case AmountOutlier
+  case SeniorMethodShiftAnomaly

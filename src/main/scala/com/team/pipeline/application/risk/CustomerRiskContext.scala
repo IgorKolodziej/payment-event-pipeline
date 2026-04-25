@@ -8,5 +8,8 @@ final case class CustomerRiskContext(
     knownDevice: Boolean,
     averageAmount30d: Option[BigDecimal],
     amountStddev30d: Option[BigDecimal],
-    historySize30d: Int
+    historySize30d: Int,
+    blikTransferCountLast24h: Int,
+    blikTransferCountLast30d: Int,
+    totalTransactionCountLast30d: Int
 )
