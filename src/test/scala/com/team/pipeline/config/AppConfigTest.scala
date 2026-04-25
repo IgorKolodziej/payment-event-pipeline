@@ -30,6 +30,7 @@ class AppConfigTest extends FunSuite:
         |  database = "payment_pipeline"
         |  processedCollection = "processed_transactions"
         |  alertsCollection = "alerts"
+        |  violationsCollection = "eligibility_violations"
         |}
         |""".stripMargin
     )
@@ -44,6 +45,7 @@ class AppConfigTest extends FunSuite:
     assertEquals(appConfig.mongo.port, 27017)
     assertEquals(appConfig.mongo.processedCollection, "processed_transactions")
     assertEquals(appConfig.mongo.alertsCollection, "alerts")
+    assertEquals(appConfig.mongo.violationsCollection, "eligibility_violations")
     assert(!appConfig.postgres.toString.contains("pipeline_pass_dev"))
     assert(appConfig.postgres.toString.contains("password=****"))
   }

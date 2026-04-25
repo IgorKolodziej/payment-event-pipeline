@@ -34,7 +34,8 @@ final case class MongoConfig(
     port: Int,
     database: String,
     processedCollection: String,
-    alertsCollection: String
+  alertsCollection: String,
+  violationsCollection: String
 )
 
 object AppConfig:
@@ -65,6 +66,7 @@ object AppConfig:
         port = mongo.getInt("port"),
         database = mongo.getString("database"),
         processedCollection = mongo.getString("processedCollection"),
-        alertsCollection = mongo.getString("alertsCollection")
+        alertsCollection = mongo.getString("alertsCollection"),
+        violationsCollection = mongo.getString("violationsCollection")
       )
     )
