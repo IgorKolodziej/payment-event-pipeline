@@ -60,7 +60,6 @@ class RiskEngineTest extends FunSuite:
     approvedAmountLast24h = BigDecimal("0"),
     lateNightTransactionCountLast7d = 0,
     knownDevice = true,
-    firstSeenDeviceAt = Some(Instant.parse("2025-01-01T00:00:00Z")),
     averageAmount30d = None,
     amountStddev30d = None,
     historySize30d = 0
@@ -258,7 +257,7 @@ class RiskEngineTest extends FunSuite:
   }
 
   test("evaluate flags high-risk new device") {
-    val riskContext = context.copy(knownDevice = false, firstSeenDeviceAt = None)
+    val riskContext = context.copy(knownDevice = false)
     val normalizedEvent = event.copy(amount = BigDecimal("4500.00"))
 
     assertSingleAlert(
@@ -303,7 +302,6 @@ class RiskEngineTest extends FunSuite:
       approvedAmountLast24h = BigDecimal("700.00"),
       lateNightTransactionCountLast7d = RiskPolicy.default.lateNightThreshold - 1,
       knownDevice = false,
-      firstSeenDeviceAt = None,
       averageAmount30d = Some(BigDecimal("100.00")),
       amountStddev30d = Some(BigDecimal("10.00")),
       historySize30d = RiskPolicy.default.amountOutlierMinHistory

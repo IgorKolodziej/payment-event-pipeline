@@ -176,11 +176,12 @@ object RiskEngine:
       context: CustomerRiskContext,
       policy: RiskPolicy
   ): Option[Alert] =
+    val isLateNightEvent = isLateNight(event, policy)
     val lateNightCountWithCurrent =
-      context.lateNightTransactionCountLast7d + (if isLateNight(event, policy) then 1 else 0)
+      context.lateNightTransactionCountLast7d + (if isLateNightEvent then 1 else 0)
 
     Option.when(
-      isLateNight(event, policy) &&
+      isLateNightEvent &&
         lateNightCountWithCurrent >= policy.lateNightThreshold
     )(
       alert(
