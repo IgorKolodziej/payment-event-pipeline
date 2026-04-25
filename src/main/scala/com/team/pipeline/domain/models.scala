@@ -35,7 +35,8 @@ final case class CustomerProfile(
     age: Int,
     gender: String,
     lastLoginCountry: String,
-    fraudBefore: Boolean
+    fraudBefore: Boolean,
+    createdAt: Option[Instant] = None
 )
 
 final case class EnrichedPaymentEvent(

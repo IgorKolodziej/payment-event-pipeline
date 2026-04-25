@@ -11,3 +11,11 @@ enum AlertType:
   case LimitExceeded
   case InvalidPaymentMethod
   case PreviouslyFlaggedCustomer
+  case CountryLoginMismatch
+  case NewAccountNearLimit
+  case SeniorNearLimitHighRiskMethod
+  case Rolling24hLimitExceeded
+  case VelocitySpike
+  case NightBurstNearLimit
+  case ZScoreAmountOutlier
+  case IqrAmountOutlier
