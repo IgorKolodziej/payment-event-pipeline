@@ -15,18 +15,27 @@ enum MerchantCategory:
 enum PaymentChannel:
   case Mobile, Web, Pos
 
+enum EligibilityDecision:
+  case Eligible, Declined
+
+enum EligibilityViolationType:
+  case InactiveCustomer
+  case InsufficientBalance
+  case SingleTransactionLimitExceeded
+  case DailyLimitExceeded
+  case PaymentMethodNotAllowed
+
 enum RiskDecision:
   case Approve, Review, Block
 
+enum FinalDecision:
+  case Accepted, Declined, Review, BlockedByRisk
+
 enum AlertType:
-  case InactiveCustomer
-  case LimitExceeded
-  case InvalidPaymentMethod
   case PreviouslyFlaggedCustomer
   case CountryMismatch
   case NewAccountHighAmount
   case LateNightTransaction
-  case CumulativeLimitExceeded
   case VelocitySpike
   case FailedAttemptBurst
   case RepeatedLateNightActivity

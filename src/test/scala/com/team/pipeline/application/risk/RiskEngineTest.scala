@@ -1,14 +1,14 @@
 package com.team.pipeline.application.risk
 
-import com.team.pipeline.domain.CustomerProfile
+import com.team.pipeline.domain.AlertType
 import com.team.pipeline.domain.Currency
+import com.team.pipeline.domain.CustomerProfile
 import com.team.pipeline.domain.EnrichedPaymentEvent
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.MerchantCategory
 import com.team.pipeline.domain.NormalizedPaymentEvent
 import com.team.pipeline.domain.PaymentChannel
 import com.team.pipeline.domain.PaymentMethod
-import com.team.pipeline.domain.AlertType
 import com.team.pipeline.domain.RiskAssessment
 import com.team.pipeline.domain.RiskDecision
 import munit.FunSuite
@@ -78,7 +78,7 @@ class RiskEngineTest extends FunSuite:
   ): EnrichedPaymentEvent =
     enriched.copy(event = normalizedEvent, customer = profile)
 
-  test("evaluate returns approve assessment when no rules fire") {
+  test("evaluate returns approve assessment when no fraud rules fire") {
     val assessment = RiskEngine.evaluate(enriched, context, RiskPolicy.default)
 
     assertEquals(
@@ -112,39 +112,14 @@ class RiskEngineTest extends FunSuite:
     )
   }
 
-  test("evaluate flags inactive customer") {
-    val assessment = assess(enrichedWith(profile = customer.copy(isActive = false)))
-
-    assertSingleAlert(
-      assessment,
-      alertType = AlertType.InactiveCustomer,
-      riskScore = 50,
-      decision = RiskDecision.Review
+  test("evaluate ignores eligibility-only conditions") {
+    val normalizedEvent = event.copy(
+      amount = BigDecimal("6000.00"),
+      paymentMethod = PaymentMethod.Card
     )
-  }
+    val profile = customer.copy(isActive = false)
 
-  test("evaluate flags amount above daily limit") {
-    val assessment =
-      assess(enrichedWith(normalizedEvent = event.copy(amount = BigDecimal("5000.01"))))
-
-    assertSingleAlert(
-      assessment,
-      alertType = AlertType.LimitExceeded,
-      riskScore = 30,
-      decision = RiskDecision.Review
-    )
-  }
-
-  test("evaluate flags disabled payment method") {
-    val assessment =
-      assess(enrichedWith(normalizedEvent = event.copy(paymentMethod = PaymentMethod.Card)))
-
-    assertSingleAlert(
-      assessment,
-      alertType = AlertType.InvalidPaymentMethod,
-      riskScore = 25,
-      decision = RiskDecision.Review
-    )
+    assertEquals(assess(enrichedWith(normalizedEvent, profile)).alerts, Nil)
   }
 
   test("evaluate flags customer with previous fraud history") {
@@ -207,29 +182,6 @@ class RiskEngineTest extends FunSuite:
       riskScore = 10,
       decision = RiskDecision.Approve
     )
-  }
-
-  test("evaluate flags cumulative daily limit exceeded") {
-    val riskContext =
-      context.copy(approvedAmountLast24h = BigDecimal("4900.00"))
-
-    assertSingleAlert(
-      assess(enriched, riskContext),
-      alertType = AlertType.CumulativeLimitExceeded,
-      riskScore = 35,
-      decision = RiskDecision.Review
-    )
-  }
-
-  test("evaluate does not count failed current event toward cumulative daily limit") {
-    val riskContext =
-      context.copy(approvedAmountLast24h = BigDecimal("4900.00"))
-    val normalizedEvent = event.copy(
-      status = EventStatus.Failed,
-      amount = BigDecimal("200.00")
-    )
-
-    assertEquals(assess(enrichedWith(normalizedEvent = normalizedEvent), riskContext).alerts, Nil)
   }
 
   test("evaluate flags velocity spike") {
@@ -306,18 +258,15 @@ class RiskEngineTest extends FunSuite:
       timestamp = Instant.parse("2026-04-24T02:30:00Z"),
       amount = BigDecimal("4500.00"),
       status = EventStatus.Failed,
-      paymentMethod = PaymentMethod.Card,
       transactionCountry = "US"
     )
     val profile = customer.copy(
-      isActive = false,
       fraudBefore = true,
       createdAt = normalizedEvent.timestamp.minusSeconds(24L * 60L * 60L)
     )
     val riskContext = context.copy(
       transactionCountLastHour = RiskPolicy.default.velocityTransactionThreshold - 1,
       failedAttemptCountLastHour = RiskPolicy.default.failedAttemptThreshold - 1,
-      approvedAmountLast24h = BigDecimal("700.00"),
       lateNightTransactionCountLast7d = RiskPolicy.default.lateNightThreshold - 1,
       knownDevice = false,
       averageAmount30d = Some(BigDecimal("100.00")),
@@ -328,8 +277,6 @@ class RiskEngineTest extends FunSuite:
     assertAlerts(
       assess(enrichedWith(normalizedEvent, profile), riskContext),
       alertTypes = List(
-        AlertType.InactiveCustomer,
-        AlertType.InvalidPaymentMethod,
         AlertType.PreviouslyFlaggedCustomer,
         AlertType.CountryMismatch,
         AlertType.NewAccountHighAmount,
@@ -340,7 +287,7 @@ class RiskEngineTest extends FunSuite:
         AlertType.NewDeviceHighRisk,
         AlertType.AmountOutlier
       ),
-      riskScore = 265,
+      riskScore = 190,
       decision = RiskDecision.Block
     )
   }

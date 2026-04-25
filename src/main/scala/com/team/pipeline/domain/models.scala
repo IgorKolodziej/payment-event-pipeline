@@ -55,10 +55,28 @@ final case class EnrichedPaymentEvent(
     hashedCustomerEmail: String
 )
 
+final case class EligibilityAssessment(
+    decision: EligibilityDecision,
+    violations: List[EligibilityViolation]
+)
+
+final case class EligibilityViolation(
+    violationType: EligibilityViolationType,
+    eventId: Int,
+    customerId: Int,
+    message: String
+)
+
 final case class RiskAssessment(
     riskScore: Int,
     decision: RiskDecision,
     alerts: List[Alert]
+)
+
+final case class PaymentAssessment(
+    eligibility: EligibilityAssessment,
+    risk: Option[RiskAssessment],
+    finalDecision: FinalDecision
 )
 
 final case class ProcessedEvent(
@@ -77,7 +95,8 @@ final case class ProcessedEvent(
     customerCountry: String,
     hashedCustomerEmail: String,
     riskScore: Int,
-    riskDecision: RiskDecision
+    riskDecision: RiskDecision,
+    finalDecision: FinalDecision
 )
 
 final case class Alert(

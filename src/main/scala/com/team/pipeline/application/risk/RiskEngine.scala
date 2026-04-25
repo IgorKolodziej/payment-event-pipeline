@@ -17,10 +17,6 @@ object RiskEngine:
       policy: RiskPolicy
   ): RiskAssessment =
     val alerts = List(
-      inactiveCustomer(event),
-      limitExceeded(event),
-      cumulativeLimitExceeded(event, context),
-      invalidPaymentMethod(event),
       previouslyFlaggedCustomer(event),
       countryMismatch(event),
       newAccountHighAmount(event, policy),
@@ -46,50 +42,6 @@ object RiskEngine:
     if riskScore >= policy.blockThreshold then RiskDecision.Block
     else if riskScore >= policy.reviewThreshold then RiskDecision.Review
     else RiskDecision.Approve
-
-  private def inactiveCustomer(event: EnrichedPaymentEvent): Option[Alert] =
-    Option.when(!event.customer.isActive)(
-      alert(event, AlertType.InactiveCustomer, 50, "Customer account is inactive")
-    )
-
-  private def limitExceeded(event: EnrichedPaymentEvent): Option[Alert] =
-    Option.when(event.event.amount > event.customer.dailyLimit)(
-      alert(
-        event,
-        AlertType.LimitExceeded,
-        30,
-        s"Amount ${event.event.amount} exceeds daily limit ${event.customer.dailyLimit}"
-      )
-    )
-
-  private def cumulativeLimitExceeded(
-      event: EnrichedPaymentEvent,
-      context: CustomerRiskContext
-  ): Option[Alert] =
-    val amountWithCurrent = context.approvedAmountLast24h + event.event.amount
-
-    Option.when(
-      event.event.status == EventStatus.Success &&
-        event.event.amount <= event.customer.dailyLimit &&
-        amountWithCurrent > event.customer.dailyLimit
-    )(
-      alert(
-        event,
-        AlertType.CumulativeLimitExceeded,
-        35,
-        s"Recent approved amount plus current transaction exceeds daily limit ${event.customer.dailyLimit}"
-      )
-    )
-
-  private def invalidPaymentMethod(event: EnrichedPaymentEvent): Option[Alert] =
-    Option.when(!event.customer.allowedPaymentMethods.contains(event.event.paymentMethod))(
-      alert(
-        event,
-        AlertType.InvalidPaymentMethod,
-        25,
-        s"Payment method ${event.event.paymentMethod} is not enabled for customer"
-      )
-    )
 
   private def previouslyFlaggedCustomer(event: EnrichedPaymentEvent): Option[Alert] =
     Option.when(event.customer.fraudBefore)(
