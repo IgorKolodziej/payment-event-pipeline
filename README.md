@@ -79,6 +79,47 @@ Open Mongo shell:
 docker compose exec mongo mongosh
 ```
 
+## Mongo Storage (Risk History)
+
+This project uses MongoDB as a replayable read/write model for risk history.
+
+Default collections:
+
+- `processed_transactions` (idempotent upsert by `eventId`)
+- `eligibility_violations` (idempotent upsert by `(eventId, violationType)`)
+- `alerts` (idempotent upsert by `(eventId, alertType)`)
+
+Recommended indexes:
+
+```javascript
+use payment_pipeline
+
+db.processed_transactions.createIndex({ eventId: 1 }, { unique: true })
+db.processed_transactions.createIndex({ customerId: 1, timestamp: 1 })
+db.processed_transactions.createIndex({ customerId: 1, deviceId: 1 })
+
+db.eligibility_violations.createIndex({ eventId: 1, violationType: 1 }, { unique: true })
+db.eligibility_violations.createIndex({ customerId: 1 })
+
+db.alerts.createIndex({ eventId: 1, alertType: 1 }, { unique: true })
+db.alerts.createIndex({ customerId: 1 })
+```
+
+> create them manually in `mongosh`
+
+Manual verification:
+
+```javascript
+// Verify idempotency: rerun pipeline and ensure no duplicates by eventId
+db.processed_transactions.aggregate([
+    { $group: { _id: "$eventId", c: { $sum: 1 } } },
+    { $match: { c: { $gt: 1 } } }
+])
+
+// Inspect one customer history ordered by event-time
+db.processed_transactions.find({ customerId: 10 }).sort({ timestamp: 1 })
+```
+
 ## Repository Notes
 
 - `.env` is local and must not be committed.
