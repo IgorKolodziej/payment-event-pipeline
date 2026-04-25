@@ -93,21 +93,22 @@ class RiskEngineTest extends FunSuite:
 
   test("decisionForScore uses review and block thresholds") {
     val policy = RiskPolicy.default
+    given RiskPolicy = policy
 
     assertEquals(
-      RiskEngine.decisionForScore(policy.reviewThreshold - 1, policy),
+      RiskEngine.decisionForScore(policy.reviewThreshold - 1),
       RiskDecision.Approve
     )
     assertEquals(
-      RiskEngine.decisionForScore(policy.reviewThreshold, policy),
+      RiskEngine.decisionForScore(policy.reviewThreshold),
       RiskDecision.Review
     )
     assertEquals(
-      RiskEngine.decisionForScore(policy.blockThreshold - 1, policy),
+      RiskEngine.decisionForScore(policy.blockThreshold - 1),
       RiskDecision.Review
     )
     assertEquals(
-      RiskEngine.decisionForScore(policy.blockThreshold, policy),
+      RiskEngine.decisionForScore(policy.blockThreshold),
       RiskDecision.Block
     )
   }

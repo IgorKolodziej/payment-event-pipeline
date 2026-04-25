@@ -16,28 +16,30 @@ object RiskEngine:
       context: CustomerRiskContext,
       policy: RiskPolicy
   ): RiskAssessment =
+    given RiskPolicy = policy
+
     val alerts = List(
       previouslyFlaggedCustomer(event),
       countryMismatch(event),
-      newAccountHighAmount(event, policy),
-      lateNightTransaction(event, policy),
-      velocitySpike(event, context, policy),
-      failedAttemptBurst(event, context, policy),
-      repeatedLateNightActivity(event, context, policy),
-      newDeviceHighRisk(event, context, policy),
-      amountOutlier(event, context, policy)
+      newAccountHighAmount(event),
+      lateNightTransaction(event),
+      velocitySpike(event, context),
+      failedAttemptBurst(event, context),
+      repeatedLateNightActivity(event, context),
+      newDeviceHighRisk(event, context),
+      amountOutlier(event, context)
     ).flatten
     val riskScore = alerts.map(_.riskScore).sum
 
     RiskAssessment(
       riskScore = riskScore,
-      decision = decisionForScore(riskScore, policy),
+      decision = decisionForScore(riskScore),
       alerts = alerts
     )
 
   private[risk] def decisionForScore(
-      riskScore: Int,
-      policy: RiskPolicy
+      riskScore: Int
+  )(using policy: RiskPolicy
   ): RiskDecision =
     if riskScore >= policy.blockThreshold then RiskDecision.Block
     else if riskScore >= policy.reviewThreshold then RiskDecision.Review
@@ -59,8 +61,8 @@ object RiskEngine:
     )
 
   private def newAccountHighAmount(
-      event: EnrichedPaymentEvent,
-      policy: RiskPolicy
+      event: EnrichedPaymentEvent
+  )(using policy: RiskPolicy
   ): Option[Alert] =
     val accountAgeHours =
       Duration.between(event.customer.createdAt, event.event.timestamp).toHours
@@ -68,7 +70,7 @@ object RiskEngine:
     Option.when(
       accountAgeHours >= 0 &&
         accountAgeHours < policy.newAccountHours &&
-        isHighAmount(event, policy)
+        isHighAmount(event)
     )(
       alert(
         event,
@@ -79,10 +81,10 @@ object RiskEngine:
     )
 
   private def lateNightTransaction(
-      event: EnrichedPaymentEvent,
-      policy: RiskPolicy
+      event: EnrichedPaymentEvent
+  )(using policy: RiskPolicy
   ): Option[Alert] =
-    Option.when(isLateNight(event, policy))(
+    Option.when(isLateNight(event))(
       alert(
         event,
         AlertType.LateNightTransaction,
@@ -93,8 +95,8 @@ object RiskEngine:
 
   private def velocitySpike(
       event: EnrichedPaymentEvent,
-      context: CustomerRiskContext,
-      policy: RiskPolicy
+      context: CustomerRiskContext
+  )(using policy: RiskPolicy
   ): Option[Alert] =
     val transactionCountWithCurrent = context.transactionCountLastHour + 1
 
@@ -109,8 +111,8 @@ object RiskEngine:
 
   private def failedAttemptBurst(
       event: EnrichedPaymentEvent,
-      context: CustomerRiskContext,
-      policy: RiskPolicy
+      context: CustomerRiskContext
+  )(using policy: RiskPolicy
   ): Option[Alert] =
     val currentFailed = if event.event.status == EventStatus.Failed then 1 else 0
     val failedAttemptsWithCurrent = context.failedAttemptCountLastHour + currentFailed
@@ -126,10 +128,10 @@ object RiskEngine:
 
   private def repeatedLateNightActivity(
       event: EnrichedPaymentEvent,
-      context: CustomerRiskContext,
-      policy: RiskPolicy
+      context: CustomerRiskContext
+  )(using policy: RiskPolicy
   ): Option[Alert] =
-    val isLateNightEvent = isLateNight(event, policy)
+    val isLateNightEvent = isLateNight(event)
     val lateNightCountWithCurrent =
       context.lateNightTransactionCountLast7d + (if isLateNightEvent then 1 else 0)
 
@@ -147,10 +149,10 @@ object RiskEngine:
 
   private def newDeviceHighRisk(
       event: EnrichedPaymentEvent,
-      context: CustomerRiskContext,
-      policy: RiskPolicy
+      context: CustomerRiskContext
+  )(using policy: RiskPolicy
   ): Option[Alert] =
-    Option.when(!context.knownDevice && (isHighAmount(event, policy) || hasCountryMismatch(event)))(
+    Option.when(!context.knownDevice && (isHighAmount(event) || hasCountryMismatch(event)))(
       alert(
         event,
         AlertType.NewDeviceHighRisk,
@@ -161,8 +163,8 @@ object RiskEngine:
 
   private def amountOutlier(
       event: EnrichedPaymentEvent,
-      context: CustomerRiskContext,
-      policy: RiskPolicy
+      context: CustomerRiskContext
+  )(using policy: RiskPolicy
   ): Option[Alert] =
     val outlierThreshold =
       for
@@ -192,16 +194,16 @@ object RiskEngine:
     value.trim.toUpperCase
 
   private def isHighAmount(
-      event: EnrichedPaymentEvent,
-      policy: RiskPolicy
+      event: EnrichedPaymentEvent
+  )(using policy: RiskPolicy
   ): Boolean =
     val highAmountThreshold =
       event.customer.dailyLimit * policy.highAmountDailyLimitRatio
     event.event.amount >= highAmountThreshold
 
   private def isLateNight(
-      event: EnrichedPaymentEvent,
-      policy: RiskPolicy
+      event: EnrichedPaymentEvent
+  )(using policy: RiskPolicy
   ): Boolean =
     val hour = event.event.timestamp.atZone(ZoneOffset.UTC).getHour
     isInHourWindow(hour, policy.lateNightStartHour, policy.lateNightEndHour)
