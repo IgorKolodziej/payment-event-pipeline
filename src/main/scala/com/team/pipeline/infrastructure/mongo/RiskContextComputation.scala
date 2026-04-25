@@ -58,7 +58,9 @@ object RiskContextComputation:
 
     val lateNightTransactionCountLast7d =
       val policy = RiskPolicy.default
-      last7d.count(h => isLateNight(h.timestamp, policy.lateNightStartHour, policy.lateNightEndHour))
+      last7d.count(h =>
+        isLateNight(h.timestamp, policy.lateNightStartHour, policy.lateNightEndHour)
+      )
 
     val knownDevice =
       val deviceId = current.event.deviceId

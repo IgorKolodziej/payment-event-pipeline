@@ -34,8 +34,8 @@ final case class MongoConfig(
     port: Int,
     database: String,
     processedCollection: String,
-  alertsCollection: String,
-  violationsCollection: String
+    alertsCollection: String,
+    violationsCollection: String
 )
 
 object AppConfig:
