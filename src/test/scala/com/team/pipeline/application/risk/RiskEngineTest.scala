@@ -176,6 +176,13 @@ class RiskEngineTest extends FunSuite:
     assertEquals(assess(enrichedWith(normalizedEvent, profile)).alerts, Nil)
   }
 
+  test("evaluate normalizes customer countries before country mismatch check") {
+    val profile = customer.copy(country = " pl ", lastLoginCountry = " de ")
+    val normalizedEvent = event.copy(transactionCountry = "PL")
+
+    assertEquals(assess(enrichedWith(normalizedEvent, profile)).alerts, Nil)
+  }
+
   test("evaluate flags high amount from new account") {
     val profile = customer.copy(
       createdAt = event.timestamp.minusSeconds(24L * 60L * 60L)
@@ -212,6 +219,17 @@ class RiskEngineTest extends FunSuite:
       riskScore = 35,
       decision = RiskDecision.Review
     )
+  }
+
+  test("evaluate does not count failed current event toward cumulative daily limit") {
+    val riskContext =
+      context.copy(approvedAmountLast24h = BigDecimal("4900.00"))
+    val normalizedEvent = event.copy(
+      status = EventStatus.Failed,
+      amount = BigDecimal("200.00")
+    )
+
+    assertEquals(assess(enrichedWith(normalizedEvent = normalizedEvent), riskContext).alerts, Nil)
   }
 
   test("evaluate flags velocity spike") {
@@ -311,7 +329,6 @@ class RiskEngineTest extends FunSuite:
       assess(enrichedWith(normalizedEvent, profile), riskContext),
       alertTypes = List(
         AlertType.InactiveCustomer,
-        AlertType.CumulativeLimitExceeded,
         AlertType.InvalidPaymentMethod,
         AlertType.PreviouslyFlaggedCustomer,
         AlertType.CountryMismatch,
@@ -323,7 +340,7 @@ class RiskEngineTest extends FunSuite:
         AlertType.NewDeviceHighRisk,
         AlertType.AmountOutlier
       ),
-      riskScore = 300,
+      riskScore = 265,
       decision = RiskDecision.Block
     )
   }

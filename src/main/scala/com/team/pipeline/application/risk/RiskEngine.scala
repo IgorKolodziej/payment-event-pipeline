@@ -69,7 +69,8 @@ object RiskEngine:
     val amountWithCurrent = context.approvedAmountLast24h + event.event.amount
 
     Option.when(
-      event.event.amount <= event.customer.dailyLimit &&
+      event.event.status == EventStatus.Success &&
+        event.event.amount <= event.customer.dailyLimit &&
         amountWithCurrent > event.customer.dailyLimit
     )(
       alert(
@@ -229,8 +230,14 @@ object RiskEngine:
     )
 
   private def hasCountryMismatch(event: EnrichedPaymentEvent): Boolean =
-    val knownCountries = Set(event.customer.country, event.customer.lastLoginCountry)
-    !knownCountries.contains(event.event.transactionCountry)
+    val knownCountries = Set(
+      normalizeCountry(event.customer.country),
+      normalizeCountry(event.customer.lastLoginCountry)
+    )
+    !knownCountries.contains(normalizeCountry(event.event.transactionCountry))
+
+  private def normalizeCountry(value: String): String =
+    value.trim.toUpperCase
 
   private def isHighAmount(
       event: EnrichedPaymentEvent,
