@@ -30,7 +30,9 @@ object RiskContextComputation:
 
   def compute(
       current: EnrichedPaymentEvent,
-      rawHistory: List[HistoryEvent]
+      rawHistory: List[HistoryEvent],
+      lateNightStartHour: Int = RiskPolicy.default.lateNightStartHour,
+      lateNightEndHour: Int = RiskPolicy.default.lateNightEndHour
   ): CustomerRiskContext =
     val currentEventId = current.event.eventId
     val now = current.event.timestamp
@@ -57,10 +59,7 @@ object RiskContextComputation:
         .foldLeft(BigDecimal(0))(_ + _)
 
     val lateNightTransactionCountLast7d =
-      val policy = RiskPolicy.default
-      last7d.count(h =>
-        isLateNight(h.timestamp, policy.lateNightStartHour, policy.lateNightEndHour)
-      )
+      last7d.count(h => isLateNight(h.timestamp, lateNightStartHour, lateNightEndHour))
 
     val knownDevice =
       val deviceId = current.event.deviceId

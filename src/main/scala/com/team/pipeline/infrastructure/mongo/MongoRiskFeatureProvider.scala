@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import com.team.pipeline.application.risk.CustomerRiskContext
+import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.domain.EnrichedPaymentEvent
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.FinalDecision
@@ -17,8 +18,10 @@ import java.time.Duration
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
-final class MongoRiskFeatureProvider(collection: MongoCollection[Document])
-    extends RiskFeatureProvider:
+final class MongoRiskFeatureProvider(
+    collection: MongoCollection[Document],
+    policy: RiskPolicy = RiskPolicy.default
+) extends RiskFeatureProvider:
 
   override def contextFor(event: EnrichedPaymentEvent): IO[CustomerRiskContext] =
     val customerId = event.event.customerId
@@ -53,7 +56,12 @@ final class MongoRiskFeatureProvider(collection: MongoCollection[Document])
 
       val history = docs.map(toHistoryEvent)
 
-      RiskContextComputation.compute(event, history)
+      RiskContextComputation.compute(
+        event,
+        history,
+        lateNightStartHour = policy.lateNightStartHour,
+        lateNightEndHour = policy.lateNightEndHour
+      )
     }
 
   private def toHistoryEvent(doc: Document): HistoryEvent =
