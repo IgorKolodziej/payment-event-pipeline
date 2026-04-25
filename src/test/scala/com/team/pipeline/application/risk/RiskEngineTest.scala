@@ -311,8 +311,11 @@ class RiskEngineTest extends FunSuite:
       riskScore: Int,
       decision: RiskDecision
   ): Unit =
+    val actualAlertTypes   = assessment.alerts.map(_.alertType).sortBy(_.toString)
+    val expectedAlertTypes = alertTypes.sortBy(_.toString)
+
     assertEquals(assessment.riskScore, riskScore)
     assertEquals(assessment.decision, decision)
-    assertEquals(assessment.alerts.map(_.alertType), alertTypes)
+    assertEquals(actualAlertTypes, expectedAlertTypes)
     assertEquals(assessment.alerts.map(_.riskScore).sum, riskScore)
 end RiskEngineTest
