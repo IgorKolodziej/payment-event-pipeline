@@ -98,10 +98,10 @@ db.processed_transactions.createIndex({ eventId: 1 }, { unique: true })
 db.processed_transactions.createIndex({ customerId: 1, timestamp: 1 })
 db.processed_transactions.createIndex({ customerId: 1, deviceId: 1 })
 
-db.eligibility_violations.createIndex({ eventId: 1 })
+db.eligibility_violations.createIndex({ eventId: 1, violationType: 1 }, { unique: true })
 db.eligibility_violations.createIndex({ customerId: 1 })
 
-db.alerts.createIndex({ eventId: 1 })
+db.alerts.createIndex({ eventId: 1, alertType: 1 }, { unique: true })
 db.alerts.createIndex({ customerId: 1 })
 ```
 
