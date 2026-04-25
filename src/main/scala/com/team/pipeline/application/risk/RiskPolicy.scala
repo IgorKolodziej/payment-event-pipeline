@@ -19,7 +19,7 @@ final case class RiskPolicy(
 
 object RiskPolicy:
   val default: RiskPolicy = RiskPolicy(
-    reviewThreshold = 40,
+    reviewThreshold = 20,
     blockThreshold = 80,
     newAccountHours = 48,
     highAmountDailyLimitRatio = BigDecimal("0.80"),

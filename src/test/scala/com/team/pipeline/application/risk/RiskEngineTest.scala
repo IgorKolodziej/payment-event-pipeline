@@ -132,7 +132,7 @@ class RiskEngineTest extends FunSuite:
       assessment,
       alertType = AlertType.LimitExceeded,
       riskScore = 30,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -144,7 +144,7 @@ class RiskEngineTest extends FunSuite:
       assessment,
       alertType = AlertType.InvalidPaymentMethod,
       riskScore = 25,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -155,7 +155,7 @@ class RiskEngineTest extends FunSuite:
       assessment,
       alertType = AlertType.PreviouslyFlaggedCustomer,
       riskScore = 20,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -187,7 +187,7 @@ class RiskEngineTest extends FunSuite:
       assess(enrichedWith(normalizedEvent, profile)),
       alertType = AlertType.NewAccountHighAmount,
       riskScore = 20,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -211,7 +211,7 @@ class RiskEngineTest extends FunSuite:
       assess(enriched, riskContext),
       alertType = AlertType.CumulativeLimitExceeded,
       riskScore = 35,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -223,7 +223,7 @@ class RiskEngineTest extends FunSuite:
       assess(enriched, riskContext),
       alertType = AlertType.VelocitySpike,
       riskScore = 30,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -236,7 +236,7 @@ class RiskEngineTest extends FunSuite:
       assess(enrichedWith(normalizedEvent = normalizedEvent), riskContext),
       alertType = AlertType.FailedAttemptBurst,
       riskScore = 30,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -253,7 +253,7 @@ class RiskEngineTest extends FunSuite:
         AlertType.RepeatedLateNightActivity
       ),
       riskScore = 30,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -265,7 +265,7 @@ class RiskEngineTest extends FunSuite:
       assess(enrichedWith(normalizedEvent = normalizedEvent), riskContext),
       alertType = AlertType.NewDeviceHighRisk,
       riskScore = 20,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
     )
   }
 
@@ -280,7 +280,53 @@ class RiskEngineTest extends FunSuite:
       assess(enriched, riskContext),
       alertType = AlertType.AmountOutlier,
       riskScore = 25,
-      decision = RiskDecision.Approve
+      decision = RiskDecision.Review
+    )
+  }
+
+  test("evaluate returns deterministic multi-alert score and block decision") {
+    val normalizedEvent = event.copy(
+      timestamp = Instant.parse("2026-04-24T02:30:00Z"),
+      amount = BigDecimal("4500.00"),
+      status = EventStatus.Failed,
+      paymentMethod = PaymentMethod.Card,
+      transactionCountry = "US"
+    )
+    val profile = customer.copy(
+      isActive = false,
+      fraudBefore = true,
+      createdAt = normalizedEvent.timestamp.minusSeconds(24L * 60L * 60L)
+    )
+    val riskContext = context.copy(
+      transactionCountLastHour = RiskPolicy.default.velocityTransactionThreshold - 1,
+      failedAttemptCountLastHour = RiskPolicy.default.failedAttemptThreshold - 1,
+      approvedAmountLast24h = BigDecimal("700.00"),
+      lateNightTransactionCountLast7d = RiskPolicy.default.lateNightThreshold - 1,
+      knownDevice = false,
+      firstSeenDeviceAt = None,
+      averageAmount30d = Some(BigDecimal("100.00")),
+      amountStddev30d = Some(BigDecimal("10.00")),
+      historySize30d = RiskPolicy.default.amountOutlierMinHistory
+    )
+
+    assertAlerts(
+      assess(enrichedWith(normalizedEvent, profile), riskContext),
+      alertTypes = List(
+        AlertType.InactiveCustomer,
+        AlertType.CumulativeLimitExceeded,
+        AlertType.InvalidPaymentMethod,
+        AlertType.PreviouslyFlaggedCustomer,
+        AlertType.CountryMismatch,
+        AlertType.NewAccountHighAmount,
+        AlertType.LateNightTransaction,
+        AlertType.VelocitySpike,
+        AlertType.FailedAttemptBurst,
+        AlertType.RepeatedLateNightActivity,
+        AlertType.NewDeviceHighRisk,
+        AlertType.AmountOutlier
+      ),
+      riskScore = 300,
+      decision = RiskDecision.Block
     )
   }
 
