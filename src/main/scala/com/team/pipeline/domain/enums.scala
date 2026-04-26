@@ -26,7 +26,7 @@ enum EligibilityViolationType:
   case PaymentMethodNotAllowed
 
 enum RiskDecision:
-  case Approve, Review, Block
+  case Approve, Review, Block, NotEvaluated
 
 enum FinalDecision:
   case Accepted, Declined, Review, BlockedByRisk

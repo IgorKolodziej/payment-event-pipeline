@@ -58,6 +58,33 @@ class MongoDocumentMappingTest extends FunSuite:
     assertEquals(doc.getString("finalDecision"), "Review")
   }
 
+  test("ProcessedEventDoc.toDocument maps not-evaluated risk decision") {
+    val processed = ProcessedEvent(
+      eventId = 2,
+      customerId = 10,
+      timestamp = Instant.parse("2026-04-24T10:00:00Z"),
+      amount = BigDecimal("150.00"),
+      currency = Currency.PLN,
+      status = EventStatus.Success,
+      paymentMethod = PaymentMethod.Blik,
+      transactionCountry = "PL",
+      merchantId = "M1",
+      merchantCategory = MerchantCategory.Grocery,
+      channel = PaymentChannel.Mobile,
+      deviceId = "device-1-1",
+      customerCountry = "PL",
+      hashedCustomerEmail = "hashed",
+      riskScore = 0,
+      riskDecision = RiskDecision.NotEvaluated,
+      finalDecision = FinalDecision.Declined
+    )
+
+    val doc = MongoDocumentMapping.ProcessedEventDoc.toDocument(processed)
+
+    assertEquals(doc.getString("riskDecision"), "NotEvaluated")
+    assertEquals(doc.getString("finalDecision"), "Declined")
+  }
+
   test("EligibilityViolationDoc.toDocument maps stable violation key fields") {
     val violation = EligibilityViolation(
       violationType = EligibilityViolationType.InactiveCustomer,
