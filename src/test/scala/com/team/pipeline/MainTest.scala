@@ -22,6 +22,7 @@ import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.domain.ProcessedEvent
 import com.team.pipeline.infrastructure.file.FileReplayEventSource
 import com.team.pipeline.infrastructure.file.PacedFileReplayEventSource
+import com.team.pipeline.infrastructure.redpanda.RedpandaEventSource
 import com.team.pipeline.ports.AlertStore
 import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
@@ -80,6 +81,15 @@ class MainTest extends CatsEffectSuite:
       )
 
       IO(assert(Main.eventSource(config).isInstanceOf[PacedFileReplayEventSource]))
+    }
+  }
+
+  test("eventSource selects Redpanda source") {
+    tempDirectory.use { tempDir =>
+      val baseConfig = testConfig(tempDir.resolve("events.jsonl"), tempDir.resolve("out"))
+      val config = baseConfig.copy(app = baseConfig.app.copy(inputMode = InputMode.Redpanda))
+
+      IO(assert(Main.eventSource(config).isInstanceOf[RedpandaEventSource]))
     }
   }
 
