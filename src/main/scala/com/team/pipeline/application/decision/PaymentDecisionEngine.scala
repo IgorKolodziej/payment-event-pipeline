@@ -36,6 +36,7 @@ object PaymentDecisionEngine:
 
   private def finalDecisionFor(risk: RiskAssessment): FinalDecision =
     risk.decision match
-      case RiskDecision.Approve => FinalDecision.Accepted
-      case RiskDecision.Review  => FinalDecision.Review
-      case RiskDecision.Block   => FinalDecision.BlockedByRisk
+      case RiskDecision.Approve      => FinalDecision.Accepted
+      case RiskDecision.Review       => FinalDecision.Review
+      case RiskDecision.Block        => FinalDecision.BlockedByRisk
+      case RiskDecision.NotEvaluated => FinalDecision.Declined
