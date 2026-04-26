@@ -18,6 +18,7 @@ import com.team.pipeline.domain.EnrichedPaymentEvent
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.domain.ProcessedEvent
+import com.team.pipeline.infrastructure.file.FileReplayEventSource
 import com.team.pipeline.ports.AlertStore
 import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
@@ -40,7 +41,8 @@ class MainTest extends CatsEffectSuite:
         savedProcessed <- Ref[IO].of(Vector.empty[ProcessedEvent])
         summary <- Main.runWith(
           testConfig(inputFile, outputDir),
-          testDependencies(savedProcessed)
+          testDependencies(savedProcessed),
+          FileReplayEventSource(inputFile)
         )
         outputExists <- IO.blocking(Files.isDirectory(outputDir))
         processed <- savedProcessed.get

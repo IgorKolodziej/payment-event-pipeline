@@ -9,12 +9,13 @@ import com.team.pipeline.application.reporting.RunSummary
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
-import com.team.pipeline.infrastructure.file.JsonlInput
+import com.team.pipeline.infrastructure.file.FileReplayEventSource
 import com.team.pipeline.infrastructure.mongo.MongoAlertStore
 import com.team.pipeline.infrastructure.mongo.MongoEligibilityViolationStore
 import com.team.pipeline.infrastructure.mongo.MongoProcessedEventStore
 import com.team.pipeline.infrastructure.mongo.MongoRiskFeatureProvider
 import com.team.pipeline.infrastructure.postgres.DoobieCustomerProfileLookup
+import com.team.pipeline.ports.EventSource
 import doobie.Transactor
 
 import java.nio.file.Files
@@ -26,7 +27,8 @@ object Main extends IOApp.Simple:
       _ <- IO.println(
         s"Payment Event Processing Pipeline started. input=${config.app.inputFile}, output=${config.app.outputDir}"
       )
-      summary <- liveDependencies(config).use(runWith(config, _))
+      source = FileReplayEventSource(config.app.inputFile)
+      summary <- liveDependencies(config).use(runWith(config, _, source))
       _ <- IO.println(
         s"Payment Event Processing Pipeline finished. read=${summary.totalRead}, processed=${summary.totalProcessed}, rejected=${summary.totalRejected}, alerts=${summary.totalAlerts}"
       )
@@ -34,11 +36,12 @@ object Main extends IOApp.Simple:
 
   private[pipeline] def runWith(
       config: AppConfig,
-      dependencies: ProcessingPipeline.Dependencies
+      dependencies: ProcessingPipeline.Dependencies,
+      eventSource: EventSource
   ): IO[RunSummary] =
     for
       _ <- IO.blocking(Files.createDirectories(config.app.outputDir))
-      summary <- ProcessingPipeline.run(JsonlInput.read(config.app.inputFile), dependencies)
+      summary <- ProcessingPipeline.run(eventSource.events, dependencies)
     yield summary
 
   private def liveDependencies(
