@@ -39,4 +39,7 @@ object PaymentDecisionEngine:
       case RiskDecision.Approve      => FinalDecision.Accepted
       case RiskDecision.Review       => FinalDecision.Review
       case RiskDecision.Block        => FinalDecision.BlockedByRisk
-      case RiskDecision.NotEvaluated => FinalDecision.Declined
+      case RiskDecision.NotEvaluated =>
+        throw new IllegalStateException(
+          "RiskDecision.NotEvaluated cannot be mapped from an evaluated risk assessment"
+        )

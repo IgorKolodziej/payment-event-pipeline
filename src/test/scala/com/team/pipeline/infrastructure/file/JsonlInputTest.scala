@@ -1,9 +1,11 @@
 package com.team.pipeline.infrastructure.file
 
 import cats.effect.IO
+import cats.effect.Resource
 import munit.CatsEffectSuite
 
 import java.nio.file.Files
+import java.nio.file.Path
 
 class JsonlInputTest extends CatsEffectSuite:
   test("read streams JSONL lines with one-based line numbers") {
@@ -13,19 +15,19 @@ class JsonlInputTest extends CatsEffectSuite:
         |{"eventId":3}
         |""".stripMargin
 
-    for
-      path <- IO.blocking(Files.createTempFile("payment-events-", ".jsonl"))
-      _ <- IO.blocking(Files.writeString(path, input))
-      lines <- JsonlInput.read(path).compile.toList
-      _ <- IO.blocking(Files.deleteIfExists(path))
-    yield assertEquals(
-      lines,
-      List(
-        JsonlInput.Line(1, """{"eventId":1}"""),
-        JsonlInput.Line(2, """{"eventId":2}"""),
-        JsonlInput.Line(3, """{"eventId":3}""")
+    tempFile.use { path =>
+      for
+        _ <- IO.blocking(Files.writeString(path, input))
+        lines <- JsonlInput.read(path).compile.toList
+      yield assertEquals(
+        lines,
+        List(
+          JsonlInput.Line(1, """{"eventId":1}"""),
+          JsonlInput.Line(2, """{"eventId":2}"""),
+          JsonlInput.Line(3, """{"eventId":3}""")
+        )
       )
-    )
+    }
   }
 
   test("read preserves blank lines for the pipeline to handle explicitly") {
@@ -35,18 +37,23 @@ class JsonlInputTest extends CatsEffectSuite:
         |{"eventId":2}
         |""".stripMargin
 
-    for
-      path <- IO.blocking(Files.createTempFile("payment-events-", ".jsonl"))
-      _ <- IO.blocking(Files.writeString(path, input))
-      lines <- JsonlInput.read(path).compile.toList
-      _ <- IO.blocking(Files.deleteIfExists(path))
-    yield assertEquals(
-      lines,
-      List(
-        JsonlInput.Line(1, """{"eventId":1}"""),
-        JsonlInput.Line(2, ""),
-        JsonlInput.Line(3, """{"eventId":2}""")
+    tempFile.use { path =>
+      for
+        _ <- IO.blocking(Files.writeString(path, input))
+        lines <- JsonlInput.read(path).compile.toList
+      yield assertEquals(
+        lines,
+        List(
+          JsonlInput.Line(1, """{"eventId":1}"""),
+          JsonlInput.Line(2, ""),
+          JsonlInput.Line(3, """{"eventId":2}""")
+        )
       )
-    )
+    }
   }
+
+  private def tempFile: Resource[IO, Path] =
+    Resource.make(IO.blocking(Files.createTempFile("payment-events-", ".jsonl")))(path =>
+      IO.blocking(Files.deleteIfExists(path)).map(_ => ())
+    )
 end JsonlInputTest

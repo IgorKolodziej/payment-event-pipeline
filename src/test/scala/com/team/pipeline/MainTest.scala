@@ -2,6 +2,7 @@ package com.team.pipeline
 
 import cats.effect.IO
 import cats.effect.Ref
+import cats.effect.Resource
 import com.team.pipeline.application.pipeline.ProcessingPipeline
 import com.team.pipeline.application.risk.CustomerRiskContext
 import com.team.pipeline.application.risk.RiskPolicy
@@ -30,26 +31,28 @@ import java.time.Instant
 
 class MainTest extends CatsEffectSuite:
   test("runWith reads configured JSONL input and returns summary") {
-    for
-      tempDir <- IO.blocking(Files.createTempDirectory("payment-pipeline-main-"))
-      inputFile = tempDir.resolve("events.jsonl")
-      outputDir = tempDir.resolve("out")
-      _ <- IO.blocking(Files.writeString(inputFile, validLine))
-      savedProcessed <- Ref[IO].of(Vector.empty[ProcessedEvent])
-      summary <- Main.runWith(
-        testConfig(inputFile, outputDir),
-        testDependencies(savedProcessed)
-      )
-      outputExists <- IO.blocking(Files.isDirectory(outputDir))
-      processed <- savedProcessed.get
-    yield
-      assert(outputExists)
-      assertEquals(summary.totalRead, 1)
-      assertEquals(summary.totalProcessed, 1)
-      assertEquals(summary.totalRejected, 0)
-      assertEquals(summary.decisionCounts, Map("Accepted" -> 1))
-      assertEquals(processed.size, 1)
-      assertEquals(processed.head.finalDecision, FinalDecision.Accepted)
+    tempDirectory.use { tempDir =>
+      val inputFile = tempDir.resolve("events.jsonl")
+      val outputDir = tempDir.resolve("out")
+
+      for
+        _ <- IO.blocking(Files.writeString(inputFile, validLine))
+        savedProcessed <- Ref[IO].of(Vector.empty[ProcessedEvent])
+        summary <- Main.runWith(
+          testConfig(inputFile, outputDir),
+          testDependencies(savedProcessed)
+        )
+        outputExists <- IO.blocking(Files.isDirectory(outputDir))
+        processed <- savedProcessed.get
+      yield
+        assert(outputExists)
+        assertEquals(summary.totalRead, 1)
+        assertEquals(summary.totalProcessed, 1)
+        assertEquals(summary.totalRejected, 0)
+        assertEquals(summary.decisionCounts, Map("Accepted" -> 1))
+        assertEquals(processed.size, 1)
+        assertEquals(processed.head.finalDecision, FinalDecision.Accepted)
+    }
   }
 
   private def testDependencies(
@@ -143,4 +146,23 @@ class MainTest extends CatsEffectSuite:
 
   private val validLine =
     """{"eventId":100,"timestamp":"2026-04-24T10:00:00Z","customerId":10,"amount":150.00,"currency":"PLN","status":"SUCCESS","paymentMethod":"BLIK","transactionCountry":"PL","merchantId":"M001","merchantCategory":"GROCERY","channel":"MOBILE","deviceId":"device-001"}"""
+
+  private def tempDirectory: Resource[IO, Path] =
+    Resource.make(IO.blocking(Files.createTempDirectory("payment-pipeline-main-")))(
+      deleteRecursively
+    )
+
+  private def deleteRecursively(path: Path): IO[Unit] =
+    IO.blocking {
+      if Files.exists(path) then
+        val paths = Files.walk(path)
+        try
+          paths
+            .sorted(java.util.Comparator.reverseOrder())
+            .forEach((p: Path) => {
+              Files.deleteIfExists(p)
+              ()
+            })
+        finally paths.close()
+    }
 end MainTest

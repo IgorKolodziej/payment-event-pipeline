@@ -13,8 +13,8 @@ object JsonlInput:
   def read(path: JPath): Stream[IO, Line] =
     Files[IO]
       .readUtf8Lines(Path.fromNioPath(path))
-      .zipWithNext
-      .filterNot { case (line, next) => line.isEmpty && next.isEmpty }
-      .map(_._1)
       .zipWithIndex
       .map { case (line, index) => Line(lineNumber = index + 1, value = line) }
+      .zipWithNext
+      .filterNot { case (line, next) => line.value.isEmpty && next.isEmpty }
+      .map(_._1)
