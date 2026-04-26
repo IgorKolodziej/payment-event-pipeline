@@ -9,6 +9,7 @@ import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
 import com.team.pipeline.config.AppSettings
+import com.team.pipeline.config.InputMode
 import com.team.pipeline.config.MongoConfig
 import com.team.pipeline.config.PostgresConfig
 import com.team.pipeline.domain.Alert
@@ -18,6 +19,8 @@ import com.team.pipeline.domain.EnrichedPaymentEvent
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.domain.ProcessedEvent
+import com.team.pipeline.infrastructure.file.FileReplayEventSource
+import com.team.pipeline.infrastructure.file.PacedFileReplayEventSource
 import com.team.pipeline.ports.AlertStore
 import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
@@ -28,6 +31,7 @@ import munit.CatsEffectSuite
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
+import scala.concurrent.duration.DurationInt
 
 class MainTest extends CatsEffectSuite:
   test("runWith reads configured JSONL input and returns summary") {
@@ -40,7 +44,8 @@ class MainTest extends CatsEffectSuite:
         savedProcessed <- Ref[IO].of(Vector.empty[ProcessedEvent])
         summary <- Main.runWith(
           testConfig(inputFile, outputDir),
-          testDependencies(savedProcessed)
+          testDependencies(savedProcessed),
+          FileReplayEventSource(inputFile)
         )
         outputExists <- IO.blocking(Files.isDirectory(outputDir))
         processed <- savedProcessed.get
@@ -52,6 +57,28 @@ class MainTest extends CatsEffectSuite:
         assertEquals(summary.decisionCounts, Map("Accepted" -> 1))
         assertEquals(processed.size, 1)
         assertEquals(processed.head.finalDecision, FinalDecision.Accepted)
+    }
+  }
+
+  test("eventSource selects file replay source by default") {
+    tempDirectory.use { tempDir =>
+      val config = testConfig(tempDir.resolve("events.jsonl"), tempDir.resolve("out"))
+
+      IO(assert(Main.eventSource(config).isInstanceOf[FileReplayEventSource]))
+    }
+  }
+
+  test("eventSource selects paced file replay source") {
+    tempDirectory.use { tempDir =>
+      val baseConfig = testConfig(tempDir.resolve("events.jsonl"), tempDir.resolve("out"))
+      val config = baseConfig.copy(
+        app = baseConfig.app.copy(
+          inputMode = InputMode.PacedFile,
+          streamDelay = 250.millis
+        )
+      )
+
+      IO(assert(Main.eventSource(config).isInstanceOf[PacedFileReplayEventSource]))
     }
   }
 
@@ -93,7 +120,9 @@ class MainTest extends CatsEffectSuite:
       app = AppSettings(
         inputFile = inputFile,
         outputDir = outputDir,
-        emailSalt = "test-salt"
+        emailSalt = "test-salt",
+        inputMode = InputMode.File,
+        streamDelay = 0.millis
       ),
       postgres = PostgresConfig(
         host = "localhost",

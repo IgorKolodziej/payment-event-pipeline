@@ -2,7 +2,7 @@
 
 Scala 3 team project for a local payment-event processing pipeline.
 
-This repository currently contains a verified development scaffold and the first implementation foundations. Internal planning notes are kept locally outside Git.
+This repository contains a local payment-event processing pipeline with JSONL replay input, PostgreSQL-backed customer enrichment, MongoDB-backed processing history, risk assessment, and summary reporting. Internal planning notes are kept locally outside Git.
 
 ## Frozen Baseline
 
@@ -19,15 +19,16 @@ This repository currently contains a verified development scaffold and the first
 
 ## Current Status
 
-The repository is ready for implementation work:
+The repository has a working end-to-end local pipeline:
 
 - build toolchain is configured,
 - PostgreSQL and MongoDB start locally,
 - PostgreSQL seed data loads,
-- sample input data exists,
+- sample input data exists and is ordered for event-time replay,
+- the app streams JSONL records through parsing, validation, enrichment, eligibility, risk, persistence, and summary aggregation,
+- processed events, alerts, and eligibility violations are written to MongoDB,
 - formatting works,
-- tests run,
-- the app entry point loads typed configuration and prepares the output directory.
+- tests run.
 
 ## Team
 
@@ -54,6 +55,13 @@ docker compose up -d
 set -a && source .env && set +a && sbt run
 ```
 
+Expected default run shape:
+
+```text
+Payment Event Processing Pipeline started. input=sample-data/small_events.jsonl, output=out
+Payment Event Processing Pipeline finished. read=200, processed=183, rejected=17, alerts=102
+```
+
 Useful commands:
 
 ```bash
@@ -78,6 +86,37 @@ Open Mongo shell:
 ```bash
 docker compose exec mongo mongosh
 ```
+
+## Replay Input Modes
+
+The app reads events through an `EventSource` abstraction. The current local sources are file-based:
+
+- `file`: fast JSONL replay, used by default.
+- `paced-file`: JSONL replay with a fixed delay between records, useful for simulating incrementally arriving events during demos or dashboard refresh work.
+
+Configure the mode in `src/main/resources/application.conf`:
+
+```hocon
+app {
+  inputFile = "sample-data/small_events.jsonl"
+  outputDir = "out"
+  inputMode = "file"
+  streamDelayMillis = 0
+}
+```
+
+For paced replay, use:
+
+```hocon
+app {
+  inputMode = "paced-file"
+  streamDelayMillis = 250
+}
+```
+
+The pacing is implemented at the source boundary with FS2. The processing pipeline itself contains no sleeps and does not know whether records came from fast file replay or paced replay.
+
+Replay input should be ordered by event timestamp ascending. Risk context is based on already processed events, so event-time ordering matters for deterministic replay.
 
 ## Mongo Storage (Risk History)
 
