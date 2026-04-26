@@ -10,6 +10,7 @@ import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
 import com.team.pipeline.config.AppSettings
 import com.team.pipeline.config.InputMode
+import com.team.pipeline.config.KafkaConfig
 import com.team.pipeline.config.MongoConfig
 import com.team.pipeline.config.PostgresConfig
 import com.team.pipeline.domain.Alert
@@ -21,6 +22,7 @@ import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.domain.ProcessedEvent
 import com.team.pipeline.infrastructure.file.FileReplayEventSource
 import com.team.pipeline.infrastructure.file.PacedFileReplayEventSource
+import com.team.pipeline.infrastructure.redpanda.RedpandaEventSource
 import com.team.pipeline.ports.AlertStore
 import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
@@ -82,6 +84,15 @@ class MainTest extends CatsEffectSuite:
     }
   }
 
+  test("eventSource selects Redpanda source") {
+    tempDirectory.use { tempDir =>
+      val baseConfig = testConfig(tempDir.resolve("events.jsonl"), tempDir.resolve("out"))
+      val config = baseConfig.copy(app = baseConfig.app.copy(inputMode = InputMode.Redpanda))
+
+      IO(assert(Main.eventSource(config).isInstanceOf[RedpandaEventSource]))
+    }
+  }
+
   private def testDependencies(
       savedProcessed: Ref[IO, Vector[ProcessedEvent]]
   ): ProcessingPipeline.Dependencies =
@@ -139,6 +150,12 @@ class MainTest extends CatsEffectSuite:
         processedCollection = "processed_transactions",
         alertsCollection = "alerts",
         violationsCollection = "eligibility_violations"
+      ),
+      kafka = KafkaConfig(
+        bootstrapServers = "localhost:19092",
+        topic = "payment-events",
+        groupId = "payment-event-pipeline",
+        clientId = "payment-event-pipeline-test"
       )
     )
 

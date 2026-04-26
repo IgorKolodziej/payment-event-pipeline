@@ -17,6 +17,7 @@ import com.team.pipeline.infrastructure.mongo.MongoEligibilityViolationStore
 import com.team.pipeline.infrastructure.mongo.MongoProcessedEventStore
 import com.team.pipeline.infrastructure.mongo.MongoRiskFeatureProvider
 import com.team.pipeline.infrastructure.postgres.DoobieCustomerProfileLookup
+import com.team.pipeline.infrastructure.redpanda.RedpandaEventSource
 import com.team.pipeline.ports.EventSource
 import doobie.Transactor
 
@@ -52,6 +53,8 @@ object Main extends IOApp.Simple:
         FileReplayEventSource(config.app.inputFile)
       case InputMode.PacedFile =>
         PacedFileReplayEventSource(config.app.inputFile, config.app.streamDelay)
+      case InputMode.Redpanda =>
+        RedpandaEventSource(config.kafka)
 
   private def liveDependencies(
       config: AppConfig
