@@ -2,6 +2,7 @@ ThisBuild / scalaVersion := "3.3.7"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / organization := "com.team"
 Compile / run / fork := true
+Compile / run / mainClass := Some("com.team.pipeline.Main")
 
 lazy val root = (project in file("."))
   .settings(

@@ -23,9 +23,10 @@ The repository has a working end-to-end local pipeline:
 
 - build toolchain is configured,
 - PostgreSQL and MongoDB start locally,
+- Redpanda starts locally as a Kafka-compatible broker,
 - PostgreSQL seed data loads,
 - sample input data exists and is ordered for event-time replay,
-- the app streams JSONL records through parsing, validation, enrichment, eligibility, risk, persistence, and summary aggregation,
+- the app streams JSONL or Redpanda records through parsing, validation, enrichment, eligibility, risk, persistence, and summary aggregation,
 - processed events, alerts, and eligibility violations are written to MongoDB,
 - formatting works,
 - tests run.
@@ -71,6 +72,7 @@ sbt Test/scalafmt
 docker compose ps -a
 docker compose logs postgres
 docker compose logs mongo
+docker compose logs redpanda
 docker compose down
 docker compose down -v
 ```
@@ -87,12 +89,13 @@ Open Mongo shell:
 docker compose exec mongo mongosh
 ```
 
-## Replay Input Modes
+## Input Modes
 
-The app reads events through an `EventSource` abstraction. The current local sources are file-based:
+The app reads events through an `EventSource` abstraction. Current local sources:
 
 - `file`: fast JSONL replay, used by default.
 - `paced-file`: JSONL replay with a fixed delay between records, useful for simulating incrementally arriving events during demos or dashboard refresh work.
+- `redpanda`: Kafka-compatible broker input using local Redpanda.
 
 Configure the mode in `src/main/resources/application.conf`:
 
@@ -117,6 +120,64 @@ app {
 The pacing is implemented at the source boundary with FS2. The processing pipeline itself contains no sleeps and does not know whether records came from fast file replay or paced replay.
 
 Replay input should be ordered by event timestamp ascending. Risk context is based on already processed events, so event-time ordering matters for deterministic replay.
+
+### Redpanda Run Path
+
+Redpanda mode models a long-running event consumer. Unlike file replay, it does not naturally finish after the current topic backlog is consumed, so local demo commands usually run it with `timeout`.
+
+Clean local stack:
+
+```bash
+docker compose down -v
+docker compose up -d
+docker compose ps -a
+```
+
+Create the demo topic and publish sample events:
+
+```bash
+docker exec pep-redpanda rpk topic create payment-events --brokers localhost:9092
+set -a && source .env && set +a && sbt "runMain com.team.pipeline.tools.PublishSampleEvents"
+```
+
+Expected publisher output:
+
+```text
+Published 200 events from sample-data/small_events.jsonl to payment-events at localhost:19092
+```
+
+Run the app from Redpanda:
+
+```bash
+set -a && source .env && export APP_INPUT_MODE=redpanda && set +a && timeout 25s sbt run
+```
+
+The timeout is expected in this mode because the broker source is an open-ended stream. Verify persisted output in Mongo:
+
+```bash
+docker compose exec mongo mongosh payment_pipeline --quiet --eval 'printjson({
+  processed: db.processed_transactions.countDocuments(),
+  alerts: db.alerts.countDocuments(),
+  violations: db.eligibility_violations.countDocuments(),
+  duplicateProcessedEventIds: db.processed_transactions.aggregate([
+    { $group: { _id: "$eventId", c: { $sum: 1 } } },
+    { $match: { c: { $gt: 1 } } }
+  ]).toArray().length
+})'
+```
+
+Expected result on a clean database with the current sample data:
+
+```javascript
+{
+  processed: 183,
+  alerts: 102,
+  violations: 162,
+  duplicateProcessedEventIds: 0
+}
+```
+
+Current Redpanda mode does not commit Kafka offsets, because the generic `EventSource` contract does not expose post-processing acknowledgements. Re-running is safe for this project because Mongo writes are idempotent.
 
 ## Mongo Storage (Risk History)
 
