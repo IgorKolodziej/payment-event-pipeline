@@ -20,6 +20,7 @@ import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.domain.ProcessedEvent
 import com.team.pipeline.infrastructure.file.FileReplayEventSource
+import com.team.pipeline.infrastructure.file.PacedFileReplayEventSource
 import com.team.pipeline.ports.AlertStore
 import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
@@ -56,6 +57,28 @@ class MainTest extends CatsEffectSuite:
         assertEquals(summary.decisionCounts, Map("Accepted" -> 1))
         assertEquals(processed.size, 1)
         assertEquals(processed.head.finalDecision, FinalDecision.Accepted)
+    }
+  }
+
+  test("eventSource selects file replay source by default") {
+    tempDirectory.use { tempDir =>
+      val config = testConfig(tempDir.resolve("events.jsonl"), tempDir.resolve("out"))
+
+      IO(assert(Main.eventSource(config).isInstanceOf[FileReplayEventSource]))
+    }
+  }
+
+  test("eventSource selects paced file replay source") {
+    tempDirectory.use { tempDir =>
+      val baseConfig = testConfig(tempDir.resolve("events.jsonl"), tempDir.resolve("out"))
+      val config = baseConfig.copy(
+        app = baseConfig.app.copy(
+          inputMode = InputMode.PacedFile,
+          streamDelay = 250.millis
+        )
+      )
+
+      IO(assert(Main.eventSource(config).isInstanceOf[PacedFileReplayEventSource]))
     }
   }
 

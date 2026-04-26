@@ -22,13 +22,14 @@ final case class AppSettings(
 )
 
 enum InputMode:
-  case File
+  case File, PacedFile
 
 object InputMode:
   def fromString(value: String): InputMode =
     value.trim.toLowerCase match
-      case "file" => InputMode.File
-      case other  => throw IllegalArgumentException(s"Unsupported input mode: $other")
+      case "file"       => InputMode.File
+      case "paced-file" => InputMode.PacedFile
+      case other        => throw IllegalArgumentException(s"Unsupported input mode: $other")
 
 final case class PostgresConfig(
     host: String,

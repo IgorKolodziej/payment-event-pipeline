@@ -54,3 +54,40 @@ class AppConfigTest extends FunSuite:
     assert(!appConfig.postgres.toString.contains("pipeline_pass_dev"))
     assert(appConfig.postgres.toString.contains("password=****"))
   }
+
+  test("loads paced file input mode") {
+    val config = ConfigFactory.parseString(
+      """
+        |app {
+        |  inputFile = "sample-data/events.jsonl"
+        |  outputDir = "out"
+        |  emailSalt = "test-salt"
+        |  inputMode = "paced-file"
+        |  streamDelayMillis = 250
+        |}
+        |
+        |postgres {
+        |  host = "localhost"
+        |  port = 5432
+        |  database = "payment_pipeline"
+        |  user = "pipeline_user"
+        |  password = "pipeline_pass_dev"
+        |  driver = "org.postgresql.Driver"
+        |}
+        |
+        |mongo {
+        |  host = "localhost"
+        |  port = 27017
+        |  database = "payment_pipeline"
+        |  processedCollection = "processed_transactions"
+        |  alertsCollection = "alerts"
+        |  violationsCollection = "eligibility_violations"
+        |}
+        |""".stripMargin
+    )
+
+    val appConfig = AppConfig.fromConfig(config)
+
+    assertEquals(appConfig.app.inputMode, InputMode.PacedFile)
+    assertEquals(appConfig.app.streamDelay, 250.millis)
+  }
