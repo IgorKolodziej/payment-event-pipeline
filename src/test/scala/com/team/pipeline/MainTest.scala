@@ -10,6 +10,7 @@ import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
 import com.team.pipeline.config.AppSettings
 import com.team.pipeline.config.InputMode
+import com.team.pipeline.config.KafkaConfig
 import com.team.pipeline.config.MongoConfig
 import com.team.pipeline.config.PostgresConfig
 import com.team.pipeline.domain.Alert
@@ -139,6 +140,12 @@ class MainTest extends CatsEffectSuite:
         processedCollection = "processed_transactions",
         alertsCollection = "alerts",
         violationsCollection = "eligibility_violations"
+      ),
+      kafka = KafkaConfig(
+        bootstrapServers = "localhost:19092",
+        topic = "payment-events",
+        groupId = "payment-event-pipeline",
+        clientId = "payment-event-pipeline-test"
       )
     )
 

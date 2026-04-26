@@ -52,6 +52,8 @@ object Main extends IOApp.Simple:
         FileReplayEventSource(config.app.inputFile)
       case InputMode.PacedFile =>
         PacedFileReplayEventSource(config.app.inputFile, config.app.streamDelay)
+      case InputMode.Redpanda =>
+        throw IllegalStateException("Redpanda input mode is not wired yet")
 
   private def liveDependencies(
       config: AppConfig

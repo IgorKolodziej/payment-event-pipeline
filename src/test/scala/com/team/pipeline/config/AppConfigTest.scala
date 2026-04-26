@@ -35,6 +35,13 @@ class AppConfigTest extends FunSuite:
         |  alertsCollection = "alerts"
         |  violationsCollection = "eligibility_violations"
         |}
+        |
+        |kafka {
+        |  bootstrapServers = "localhost:19092"
+        |  topic = "payment-events"
+        |  groupId = "payment-event-pipeline"
+        |  clientId = "payment-event-pipeline-test"
+        |}
         |""".stripMargin
     )
 
@@ -51,6 +58,10 @@ class AppConfigTest extends FunSuite:
     assertEquals(appConfig.mongo.processedCollection, "processed_transactions")
     assertEquals(appConfig.mongo.alertsCollection, "alerts")
     assertEquals(appConfig.mongo.violationsCollection, "eligibility_violations")
+    assertEquals(appConfig.kafka.bootstrapServers, "localhost:19092")
+    assertEquals(appConfig.kafka.topic, "payment-events")
+    assertEquals(appConfig.kafka.groupId, "payment-event-pipeline")
+    assertEquals(appConfig.kafka.clientId, "payment-event-pipeline-test")
     assert(!appConfig.postgres.toString.contains("pipeline_pass_dev"))
     assert(appConfig.postgres.toString.contains("password=****"))
   }
@@ -83,6 +94,13 @@ class AppConfigTest extends FunSuite:
         |  alertsCollection = "alerts"
         |  violationsCollection = "eligibility_violations"
         |}
+        |
+        |kafka {
+        |  bootstrapServers = "localhost:19092"
+        |  topic = "payment-events"
+        |  groupId = "payment-event-pipeline"
+        |  clientId = "payment-event-pipeline-test"
+        |}
         |""".stripMargin
     )
 
@@ -90,4 +108,8 @@ class AppConfigTest extends FunSuite:
 
     assertEquals(appConfig.app.inputMode, InputMode.PacedFile)
     assertEquals(appConfig.app.streamDelay, 250.millis)
+  }
+
+  test("loads redpanda input mode") {
+    assertEquals(InputMode.fromString("redpanda"), InputMode.Redpanda)
   }

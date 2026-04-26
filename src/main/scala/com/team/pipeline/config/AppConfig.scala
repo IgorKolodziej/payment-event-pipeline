@@ -10,7 +10,8 @@ import scala.concurrent.duration.MILLISECONDS
 final case class AppConfig(
     app: AppSettings,
     postgres: PostgresConfig,
-    mongo: MongoConfig
+    mongo: MongoConfig,
+    kafka: KafkaConfig
 )
 
 final case class AppSettings(
@@ -22,13 +23,14 @@ final case class AppSettings(
 )
 
 enum InputMode:
-  case File, PacedFile
+  case File, PacedFile, Redpanda
 
 object InputMode:
   def fromString(value: String): InputMode =
     value.trim.toLowerCase match
       case "file"       => InputMode.File
       case "paced-file" => InputMode.PacedFile
+      case "redpanda"   => InputMode.Redpanda
       case other        => throw IllegalArgumentException(s"Unsupported input mode: $other")
 
 final case class PostgresConfig(
@@ -52,6 +54,13 @@ final case class MongoConfig(
     violationsCollection: String
 )
 
+final case class KafkaConfig(
+    bootstrapServers: String,
+    topic: String,
+    groupId: String,
+    clientId: String
+)
+
 object AppConfig:
   def load: IO[AppConfig] =
     IO.blocking(ConfigFactory.load().resolve()).map(fromConfig)
@@ -60,6 +69,7 @@ object AppConfig:
     val app = config.getConfig("app")
     val postgres = config.getConfig("postgres")
     val mongo = config.getConfig("mongo")
+    val kafka = config.getConfig("kafka")
 
     AppConfig(
       app = AppSettings(
@@ -84,5 +94,11 @@ object AppConfig:
         processedCollection = mongo.getString("processedCollection"),
         alertsCollection = mongo.getString("alertsCollection"),
         violationsCollection = mongo.getString("violationsCollection")
+      ),
+      kafka = KafkaConfig(
+        bootstrapServers = kafka.getString("bootstrapServers"),
+        topic = kafka.getString("topic"),
+        groupId = kafka.getString("groupId"),
+        clientId = kafka.getString("clientId")
       )
     )
