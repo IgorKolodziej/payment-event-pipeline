@@ -5,7 +5,6 @@ import com.team.pipeline.config.KafkaConfig
 import com.team.pipeline.ports.EventSource
 import fs2.Stream
 import fs2.kafka.AutoOffsetReset
-import fs2.kafka.ConsumerRecord
 import fs2.kafka.ConsumerSettings
 import fs2.kafka.KafkaConsumer
 
@@ -15,7 +14,11 @@ final class RedpandaEventSource(config: KafkaConfig) extends EventSource:
       .stream(RedpandaEventSource.consumerSettings(config))
       .subscribeTo(config.topic)
       .records
-      .map(record => RedpandaEventSource.inputLine(record.record))
+      .map(_.record.value)
+      .zipWithIndex
+      .map { case (value, index) =>
+        RedpandaEventSource.inputLine(value, index)
+      }
 
 object RedpandaEventSource:
   private[redpanda] def consumerSettings(
@@ -28,8 +31,8 @@ object RedpandaEventSource:
       .withAutoOffsetReset(AutoOffsetReset.Earliest)
       .withEnableAutoCommit(false)
 
-  private[redpanda] def inputLine(record: ConsumerRecord[String, String]): EventSource.InputLine =
+  private[redpanda] def inputLine(value: String, index: Long): EventSource.InputLine =
     EventSource.InputLine(
-      lineNumber = record.offset + 1,
-      value = record.value
+      lineNumber = index + 1,
+      value = value
     )

@@ -2,7 +2,6 @@ package com.team.pipeline.infrastructure.redpanda
 
 import com.team.pipeline.config.KafkaConfig
 import com.team.pipeline.ports.EventSource
-import fs2.kafka.ConsumerRecord
 import munit.FunSuite
 import org.apache.kafka.clients.consumer.ConsumerConfig
 
@@ -18,18 +17,14 @@ class RedpandaEventSourceTest extends FunSuite:
     assertEquals(properties(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG), "false")
   }
 
-  test("maps consumed Kafka records to generic input lines") {
-    val record = ConsumerRecord[String, String](
-      topic = config.topic,
-      partition = 0,
-      offset = 41L,
-      key = "10",
-      value = """{"eventId":100}"""
-    )
-
+  test("maps consumed values to monotonic generic input lines") {
     assertEquals(
-      RedpandaEventSource.inputLine(record),
-      EventSource.InputLine(lineNumber = 42, value = """{"eventId":100}""")
+      RedpandaEventSource.inputLine("""{"eventId":100}""", index = 0L),
+      EventSource.InputLine(lineNumber = 1, value = """{"eventId":100}""")
+    )
+    assertEquals(
+      RedpandaEventSource.inputLine("""{"eventId":101}""", index = 41L),
+      EventSource.InputLine(lineNumber = 42, value = """{"eventId":101}""")
     )
   }
 
