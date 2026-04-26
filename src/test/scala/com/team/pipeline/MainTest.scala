@@ -9,6 +9,7 @@ import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
 import com.team.pipeline.config.AppSettings
+import com.team.pipeline.config.InputMode
 import com.team.pipeline.config.MongoConfig
 import com.team.pipeline.config.PostgresConfig
 import com.team.pipeline.domain.Alert
@@ -29,6 +30,7 @@ import munit.CatsEffectSuite
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
+import scala.concurrent.duration.DurationInt
 
 class MainTest extends CatsEffectSuite:
   test("runWith reads configured JSONL input and returns summary") {
@@ -95,7 +97,9 @@ class MainTest extends CatsEffectSuite:
       app = AppSettings(
         inputFile = inputFile,
         outputDir = outputDir,
-        emailSalt = "test-salt"
+        emailSalt = "test-salt",
+        inputMode = InputMode.File,
+        streamDelay = 0.millis
       ),
       postgres = PostgresConfig(
         host = "localhost",

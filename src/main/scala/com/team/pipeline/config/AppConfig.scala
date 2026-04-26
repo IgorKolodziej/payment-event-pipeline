@@ -4,6 +4,8 @@ import cats.effect.IO
 import com.typesafe.config.{Config, ConfigFactory}
 
 import java.nio.file.Path
+import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.MILLISECONDS
 
 final case class AppConfig(
     app: AppSettings,
@@ -14,8 +16,19 @@ final case class AppConfig(
 final case class AppSettings(
     inputFile: Path,
     outputDir: Path,
-    emailSalt: String
+    emailSalt: String,
+    inputMode: InputMode,
+    streamDelay: FiniteDuration
 )
+
+enum InputMode:
+  case File
+
+object InputMode:
+  def fromString(value: String): InputMode =
+    value.trim.toLowerCase match
+      case "file" => InputMode.File
+      case other  => throw IllegalArgumentException(s"Unsupported input mode: $other")
 
 final case class PostgresConfig(
     host: String,
@@ -51,7 +64,9 @@ object AppConfig:
       app = AppSettings(
         inputFile = Path.of(app.getString("inputFile")),
         outputDir = Path.of(app.getString("outputDir")),
-        emailSalt = app.getString("emailSalt")
+        emailSalt = app.getString("emailSalt"),
+        inputMode = InputMode.fromString(app.getString("inputMode")),
+        streamDelay = FiniteDuration(app.getLong("streamDelayMillis"), MILLISECONDS)
       ),
       postgres = PostgresConfig(
         host = postgres.getString("host"),
