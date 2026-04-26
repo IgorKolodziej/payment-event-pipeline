@@ -8,5 +8,5 @@ import java.nio.file.Path
 import scala.concurrent.duration.FiniteDuration
 
 final class PacedFileReplayEventSource(path: Path, delay: FiniteDuration) extends EventSource:
-  override def events: Stream[IO, JsonlInput.Line] =
-    JsonlInput.read(path).metered(delay)
+  override def events: Stream[IO, EventSource.InputLine] =
+    JsonlInput.read(path).meteredStartImmediately(delay)

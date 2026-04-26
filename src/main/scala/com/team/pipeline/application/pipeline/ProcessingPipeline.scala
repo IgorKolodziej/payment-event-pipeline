@@ -14,10 +14,10 @@ import com.team.pipeline.domain.EnrichedPaymentEvent
 import com.team.pipeline.domain.PaymentAssessment
 import com.team.pipeline.domain.ProcessedEvent
 import com.team.pipeline.domain.RejectedEvent
-import com.team.pipeline.infrastructure.file.JsonlInput
 import com.team.pipeline.ports.AlertStore
 import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
+import com.team.pipeline.ports.EventSource
 import com.team.pipeline.ports.ProcessedEventStore
 import com.team.pipeline.ports.RiskFeatureProvider
 import fs2.Stream
@@ -38,19 +38,19 @@ object ProcessingPipeline:
     case Processed(processed: ProcessedEvent, assessment: PaymentAssessment)
 
   def process(
-      lines: Stream[IO, JsonlInput.Line],
+      lines: Stream[IO, EventSource.InputLine],
       dependencies: Dependencies
   ): Stream[IO, LineOutcome] =
     lines.evalMap(processLine(_, dependencies))
 
   def run(
-      lines: Stream[IO, JsonlInput.Line],
+      lines: Stream[IO, EventSource.InputLine],
       dependencies: Dependencies
   ): IO[RunSummary] =
     process(lines, dependencies).compile.fold(RunSummary.empty)(updateSummary)
 
   private[pipeline] def processLine(
-      line: JsonlInput.Line,
+      line: EventSource.InputLine,
       dependencies: Dependencies
   ): IO[LineOutcome] =
     EventParser.parseLine(line.value) match

@@ -2,6 +2,7 @@ package com.team.pipeline.infrastructure.file
 
 import cats.effect.IO
 import cats.effect.Resource
+import com.team.pipeline.ports.EventSource
 import munit.CatsEffectSuite
 
 import java.nio.file.Files
@@ -22,9 +23,9 @@ class JsonlInputTest extends CatsEffectSuite:
       yield assertEquals(
         lines,
         List(
-          JsonlInput.Line(1, """{"eventId":1}"""),
-          JsonlInput.Line(2, """{"eventId":2}"""),
-          JsonlInput.Line(3, """{"eventId":3}""")
+          EventSource.InputLine(1, """{"eventId":1}"""),
+          EventSource.InputLine(2, """{"eventId":2}"""),
+          EventSource.InputLine(3, """{"eventId":3}""")
         )
       )
     }
@@ -44,9 +45,9 @@ class JsonlInputTest extends CatsEffectSuite:
       yield assertEquals(
         lines,
         List(
-          JsonlInput.Line(1, """{"eventId":1}"""),
-          JsonlInput.Line(2, ""),
-          JsonlInput.Line(3, """{"eventId":2}""")
+          EventSource.InputLine(1, """{"eventId":1}"""),
+          EventSource.InputLine(2, ""),
+          EventSource.InputLine(3, """{"eventId":2}""")
         )
       )
     }

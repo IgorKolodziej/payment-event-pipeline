@@ -1,8 +1,10 @@
 package com.team.pipeline.ports
 
 import cats.effect.IO
-import com.team.pipeline.infrastructure.file.JsonlInput
 import fs2.Stream
 
+object EventSource:
+  final case class InputLine(lineNumber: Long, value: String)
+
 trait EventSource:
-  def events: Stream[IO, JsonlInput.Line]
+  def events: Stream[IO, EventSource.InputLine]
