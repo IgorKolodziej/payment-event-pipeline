@@ -140,10 +140,16 @@ docker exec pep-redpanda rpk topic create payment-events --brokers localhost:909
 set -a && source .env && set +a && sbt "runMain com.team.pipeline.tools.PublishSampleEvents"
 ```
 
+For a live-style demo, publish with a delay between records:
+
+```bash
+set -a && source .env && export PUBLISH_DELAY_MILLIS=250 && set +a && sbt "runMain com.team.pipeline.tools.PublishSampleEvents"
+```
+
 Expected publisher output:
 
 ```text
-Published 200 events from sample-data/small_events.jsonl to payment-events at localhost:19092
+Published 200 events from sample-data/small_events.jsonl to payment-events at localhost:19092 (no delay)
 ```
 
 Run the app from Redpanda:

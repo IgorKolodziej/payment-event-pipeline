@@ -1,10 +1,12 @@
 package com.team.pipeline.tools
 
 import com.team.pipeline.config.KafkaConfig
-import munit.FunSuite
+import fs2.Stream
+import munit.CatsEffectSuite
 import org.apache.kafka.clients.producer.ProducerConfig
+import scala.concurrent.duration.*
 
-class PublishSampleEventsTest extends FunSuite:
+class PublishSampleEventsTest extends CatsEffectSuite:
   test("uses customer id as record key when the line can be parsed") {
     val record = PublishSampleEvents.toRecord("payment-events")(validLine)
 
@@ -28,6 +30,38 @@ class PublishSampleEventsTest extends FunSuite:
     assertEquals(properties(ProducerConfig.CLIENT_ID_CONFIG), s"${config.clientId}-publisher")
     assertEquals(properties(ProducerConfig.ACKS_CONFIG), "all")
     assertEquals(properties(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG), "true")
+  }
+
+  test("parses missing publish delay as zero") {
+    assertEquals(
+      PublishSampleEvents.parseDelay(None),
+      PublishSampleEvents.PublisherSettings(0.millis)
+    )
+  }
+
+  test("parses positive publish delay") {
+    assertEquals(
+      PublishSampleEvents.parseDelay(Some("250")),
+      PublishSampleEvents.PublisherSettings(250.millis)
+    )
+  }
+
+  test("rejects negative publish delay") {
+    intercept[IllegalArgumentException] {
+      PublishSampleEvents.parseDelay(Some("-1"))
+    }
+  }
+
+  test("fast publisher mode preserves records without pacing") {
+    val records = Stream
+      .emits(List("first", "second"))
+      .covary[cats.effect.IO]
+
+    PublishSampleEvents
+      .paced(records, PublishSampleEvents.PublisherSettings(0.millis))
+      .compile
+      .toList
+      .map(result => assertEquals(result, List("first", "second")))
   }
 
   private val config = KafkaConfig(
