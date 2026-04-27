@@ -54,11 +54,21 @@ object PublishSampleEvents extends IOApp.Simple:
       .map(parseDelay)
 
   private[tools] def parseDelay(raw: Option[String]): PublisherSettings =
-    val millis = raw.filter(_.nonEmpty).map(_.toLong).getOrElse(0L)
-
-    if millis < 0 then
-      throw IllegalArgumentException("PUBLISH_DELAY_MILLIS must be greater than or equal to 0")
-    else PublisherSettings(FiniteDuration(millis, MILLISECONDS))
+    raw.map(_.trim).filter(_.nonEmpty) match
+      case None =>
+        PublisherSettings(FiniteDuration(0, MILLISECONDS))
+      case Some(value) =>
+        value.toLongOption match
+          case Some(millis) if millis >= 0 =>
+            PublisherSettings(FiniteDuration(millis, MILLISECONDS))
+          case Some(_) =>
+            throw IllegalArgumentException(
+              "PUBLISH_DELAY_MILLIS must be greater than or equal to 0"
+            )
+          case None =>
+            throw IllegalArgumentException(
+              s"PUBLISH_DELAY_MILLIS must be an integer number of milliseconds (e.g. 0, 250, 1000), but got: '$value'"
+            )
 
   private[tools] def paced[A](stream: Stream[IO, A], settings: PublisherSettings): Stream[IO, A] =
     if settings.delay.length > 0 then stream.meteredStartImmediately(settings.delay)
