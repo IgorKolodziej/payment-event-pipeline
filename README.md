@@ -1,6 +1,7 @@
 # Payment Event Processing Pipeline
 
 [![CI](https://github.com/IgorKolodziej/payment-event-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/IgorKolodziej/payment-event-pipeline/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/IgorKolodziej/payment-event-pipeline/graph/badge.svg?token=S2QWLQMX7Z)](https://codecov.io/github/IgorKolodziej/payment-event-pipeline)
 
 A Scala 3 payment-event processing pipeline for local replay and broker-backed stream processing.
 
