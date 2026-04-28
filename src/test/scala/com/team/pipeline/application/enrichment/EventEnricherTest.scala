@@ -35,6 +35,7 @@ class EventEnricherTest extends FunSuite:
     lastName = "Krolak",
     email = "B.Krolak@Firma.PL",
     country = "PL",
+    accountCurrency = Currency.PLN,
     balance = BigDecimal("5500.00"),
     dailyLimit = BigDecimal("5000.00"),
     allowedPaymentMethods = Set(PaymentMethod.Blik, PaymentMethod.Transfer),

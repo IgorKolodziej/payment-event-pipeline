@@ -8,6 +8,7 @@ import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.domain.Alert
 import com.team.pipeline.domain.AlertType
+import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.CustomerProfile
 import com.team.pipeline.domain.EligibilityViolation
 import com.team.pipeline.domain.EligibilityViolationType
@@ -160,6 +161,32 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       assert(order.indexOf("context:100") < order.indexOf("processed:100"))
   }
 
+  test("run stores currency mismatch as declined processed event with unevaluated risk") {
+    for
+      fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
+      summary <- ProcessingPipeline.run(
+        Stream.emit(EventSource.InputLine(1, validLine(currency = "EUR"))),
+        fixture.dependencies
+      )
+      savedProcessed <- fixture.savedProcessed.get
+      savedViolations <- fixture.savedViolations.get
+      savedAlerts <- fixture.savedAlerts.get
+    yield
+      assertEquals(summary.totalRead, 1)
+      assertEquals(summary.totalProcessed, 1)
+      assertEquals(summary.totalRejected, 0)
+      assertEquals(summary.decisionCounts, Map("Declined" -> 1))
+      assertEquals(savedProcessed.size, 1)
+      assertEquals(savedProcessed.head.customerAccountCurrency, Currency.PLN)
+      assertEquals(savedProcessed.head.riskDecision, RiskDecision.NotEvaluated)
+      assertEquals(savedProcessed.head.finalDecision, FinalDecision.Declined)
+      assertEquals(
+        savedViolations.map(_.violationType),
+        Vector(EligibilityViolationType.CurrencyMismatch)
+      )
+      assertEquals(savedAlerts, Vector.empty)
+  }
+
   private final case class TestFixture(
       dependencies: ProcessingPipeline.Dependencies,
       lookupCalls: Ref[IO, Vector[Int]],
@@ -237,6 +264,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
     lastName = "Krolak",
     email = "b.krolak@firma.pl",
     country = "PL",
+    accountCurrency = Currency.PLN,
     balance = BigDecimal("5500.00"),
     dailyLimit = BigDecimal("5000.00"),
     allowedPaymentMethods = Set(PaymentMethod.Blik, PaymentMethod.Transfer),
@@ -267,8 +295,9 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       customerId: Int = customer.customerId,
       amount: String = "150.00",
       status: String = "SUCCESS",
+      currency: String = "PLN",
       paymentMethod: String = "BLIK",
       transactionCountry: String = "PL"
   ): String =
-    s"""{"eventId":$eventId,"timestamp":"2026-04-24T10:00:00Z","customerId":$customerId,"amount":$amount,"currency":"PLN","status":"$status","paymentMethod":"$paymentMethod","transactionCountry":"$transactionCountry","merchantId":"M001","merchantCategory":"GROCERY","channel":"MOBILE","deviceId":"device-001"}"""
+    s"""{"eventId":$eventId,"timestamp":"2026-04-24T10:00:00Z","customerId":$customerId,"amount":$amount,"currency":"$currency","status":"$status","paymentMethod":"$paymentMethod","transactionCountry":"$transactionCountry","merchantId":"M001","merchantCategory":"GROCERY","channel":"MOBILE","deviceId":"device-001"}"""
 end ProcessingPipelineTest

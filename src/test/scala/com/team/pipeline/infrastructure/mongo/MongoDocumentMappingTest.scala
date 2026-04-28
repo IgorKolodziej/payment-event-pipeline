@@ -34,6 +34,7 @@ class MongoDocumentMappingTest extends FunSuite:
       channel = PaymentChannel.Mobile,
       deviceId = "device-1-1",
       customerCountry = "PL",
+      customerAccountCurrency = Currency.PLN,
       hashedCustomerEmail = "hashed",
       riskScore = 25,
       riskDecision = RiskDecision.Review,
@@ -52,6 +53,7 @@ class MongoDocumentMappingTest extends FunSuite:
     assertEquals(doc.getString("merchantCategory"), "Grocery")
     assertEquals(doc.getString("channel"), "Mobile")
     assertEquals(doc.getString("deviceId"), "device-1-1")
+    assertEquals(doc.getString("customerAccountCurrency"), "PLN")
     assertEquals(doc.getString("hashedCustomerEmail"), "hashed")
     assertEquals(doc.getInteger("riskScore").intValue(), 25)
     assertEquals(doc.getString("riskDecision"), "Review")
@@ -73,6 +75,7 @@ class MongoDocumentMappingTest extends FunSuite:
       channel = PaymentChannel.Mobile,
       deviceId = "device-1-1",
       customerCountry = "PL",
+      customerAccountCurrency = Currency.PLN,
       hashedCustomerEmail = "hashed",
       riskScore = 0,
       riskDecision = RiskDecision.NotEvaluated,

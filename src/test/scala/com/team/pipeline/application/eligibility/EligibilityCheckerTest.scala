@@ -38,6 +38,7 @@ class EligibilityCheckerTest extends FunSuite:
     lastName = "Krolak",
     email = "b.krolak@firma.pl",
     country = "PL",
+    accountCurrency = Currency.PLN,
     balance = BigDecimal("5500.00"),
     dailyLimit = BigDecimal("5000.00"),
     allowedPaymentMethods = Set(PaymentMethod.Blik, PaymentMethod.Transfer),
@@ -84,6 +85,37 @@ class EligibilityCheckerTest extends FunSuite:
 
     assertEquals(assessment.decision, EligibilityDecision.Eligible)
     assertEquals(assessment.violations, Nil)
+  }
+
+  test("evaluate accepts same-currency successful payments") {
+    val assessment = assess(enrichedWith(event.copy(currency = Currency.PLN)))
+
+    assertEquals(assessment.decision, EligibilityDecision.Eligible)
+    assertEquals(assessment.violations, Nil)
+  }
+
+  test("evaluate declines account currency mismatch") {
+    assertSingleViolation(
+      assess(enrichedWith(event.copy(currency = Currency.EUR))),
+      EligibilityViolationType.CurrencyMismatch
+    )
+  }
+
+  test("evaluate does not run money comparisons when currencies differ") {
+    val normalizedEvent = event.copy(
+      amount = BigDecimal("10000.00"),
+      currency = Currency.EUR
+    )
+    val profile = customer.copy(
+      balance = BigDecimal("10.00"),
+      dailyLimit = BigDecimal("20.00")
+    )
+    val riskContext = context.copy(approvedAmountLast24h = BigDecimal("10000.00"))
+
+    assertSingleViolation(
+      assess(enrichedWith(normalizedEvent, profile), riskContext),
+      EligibilityViolationType.CurrencyMismatch
+    )
   }
 
   test("evaluate declines inactive customer") {

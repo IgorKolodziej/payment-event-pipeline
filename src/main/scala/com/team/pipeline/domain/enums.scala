@@ -20,6 +20,7 @@ enum EligibilityDecision:
 
 enum EligibilityViolationType:
   case InactiveCustomer
+  case CurrencyMismatch
   case InsufficientBalance
   case SingleTransactionLimitExceeded
   case DailyLimitExceeded

@@ -15,6 +15,7 @@ object EligibilityChecker:
   ): EligibilityAssessment =
     val violations = List(
       inactiveCustomer(event),
+      currencyMismatch(event),
       insufficientBalance(event),
       singleTransactionLimitExceeded(event),
       dailyLimitExceeded(event, context),
@@ -37,9 +38,19 @@ object EligibilityChecker:
       )
     )
 
+  private def currencyMismatch(event: EnrichedPaymentEvent): Option[EligibilityViolation] =
+    Option.when(!hasComparableCurrency(event))(
+      violation(
+        event,
+        EligibilityViolationType.CurrencyMismatch,
+        s"Event currency ${event.event.currency} does not match customer account currency ${event.customer.accountCurrency}"
+      )
+    )
+
   private def insufficientBalance(event: EnrichedPaymentEvent): Option[EligibilityViolation] =
     Option.when(
       event.event.status == EventStatus.Success &&
+        hasComparableCurrency(event) &&
         event.event.amount > event.customer.balance
     )(
       violation(
@@ -54,6 +65,7 @@ object EligibilityChecker:
   ): Option[EligibilityViolation] =
     Option.when(
       event.event.status == EventStatus.Success &&
+        hasComparableCurrency(event) &&
         event.event.amount > event.customer.dailyLimit
     )(
       violation(
@@ -71,6 +83,7 @@ object EligibilityChecker:
 
     Option.when(
       event.event.status == EventStatus.Success &&
+        hasComparableCurrency(event) &&
         event.event.amount <= event.customer.dailyLimit &&
         amountWithCurrent > event.customer.dailyLimit
     )(
@@ -89,6 +102,9 @@ object EligibilityChecker:
         s"Payment method ${event.event.paymentMethod} is not enabled for customer"
       )
     )
+
+  private def hasComparableCurrency(event: EnrichedPaymentEvent): Boolean =
+    event.event.currency == event.customer.accountCurrency
 
   private def violation(
       event: EnrichedPaymentEvent,

@@ -28,6 +28,7 @@ object ProcessedEventMapper:
       channel = normalized.channel,
       deviceId = normalized.deviceId,
       customerCountry = event.customer.country,
+      customerAccountCurrency = event.customer.accountCurrency,
       hashedCustomerEmail = event.hashedCustomerEmail,
       riskScore = riskScore,
       riskDecision = riskDecision,

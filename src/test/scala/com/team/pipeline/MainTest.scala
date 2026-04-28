@@ -14,6 +14,7 @@ import com.team.pipeline.config.KafkaConfig
 import com.team.pipeline.config.MongoConfig
 import com.team.pipeline.config.PostgresConfig
 import com.team.pipeline.domain.Alert
+import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.CustomerProfile
 import com.team.pipeline.domain.EligibilityViolation
 import com.team.pipeline.domain.EnrichedPaymentEvent
@@ -165,6 +166,7 @@ class MainTest extends CatsEffectSuite:
     lastName = "Krolak",
     email = "b.krolak@firma.pl",
     country = "PL",
+    accountCurrency = Currency.PLN,
     balance = BigDecimal("5500.00"),
     dailyLimit = BigDecimal("5000.00"),
     allowedPaymentMethods = Set(PaymentMethod.Blik, PaymentMethod.Transfer),
