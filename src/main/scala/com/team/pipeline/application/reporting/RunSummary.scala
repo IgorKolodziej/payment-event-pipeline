@@ -75,13 +75,13 @@ extension (summary: RunSummary)
     )
 
   def onDecision(decision: FinalDecision): RunSummary =
-    val key = decision.toString
+    val key = decision.code
     summary.copy(
       decisionCounts = RunSummary.increment(summary.decisionCounts, key)
     )
 
   def onAlert(alertType: AlertType): RunSummary =
-    val key = alertType.toString
+    val key = alertType.code
     summary.copy(
       totalAlerts = summary.totalAlerts + 1,
       alertCounts = RunSummary.increment(summary.alertCounts, key)

@@ -68,10 +68,12 @@ final class MongoRiskFeatureProvider(
     val eventId = doc.getInteger("eventId").intValue()
     val timestamp = doc.getDate("timestamp").toInstant
     val amount = BigDecimal(doc.getString("amount"))
-    val status = EventStatus.valueOf(doc.getString("status"))
-    val paymentMethod = PaymentMethod.valueOf(doc.getString("paymentMethod"))
+    val status = parseStored("status", doc.getString("status"))(EventStatus.fromCode)
+    val paymentMethod =
+      parseStored("paymentMethod", doc.getString("paymentMethod"))(PaymentMethod.fromCode)
     val deviceId = doc.getString("deviceId")
-    val finalDecision = FinalDecision.valueOf(doc.getString("finalDecision"))
+    val finalDecision =
+      parseStored("finalDecision", doc.getString("finalDecision"))(FinalDecision.fromCode)
 
     HistoryEvent(
       eventId = eventId,
@@ -81,4 +83,13 @@ final class MongoRiskFeatureProvider(
       paymentMethod = paymentMethod,
       deviceId = deviceId,
       finalDecision = finalDecision
+    )
+
+  private def parseStored[A](
+      field: String,
+      value: String
+  )(parse: String => Either[String, A]): A =
+    parse(value).fold(
+      error => throw IllegalArgumentException(s"Invalid Mongo history field '$field': $error"),
+      identity
     )

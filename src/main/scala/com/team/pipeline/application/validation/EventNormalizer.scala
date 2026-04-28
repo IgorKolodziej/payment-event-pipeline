@@ -57,25 +57,16 @@ object EventNormalizer:
     Try(Instant.parse(value)).toEither.left.map(_ => InvalidTimestamp(value))
 
   def normalizeCurrency(value: String): Either[ValidationError, Currency] =
-    normalizeEnumKey(value) match
-      case "PLN"   => Right(Currency.PLN)
-      case "EUR"   => Right(Currency.EUR)
-      case "USD"   => Right(Currency.USD)
-      case "GBP"   => Right(Currency.GBP)
-      case invalid => Left(InvalidCurrency(invalid))
+    val normalized = normalizeEnumKey(value)
+    Currency.fromCode(normalized).left.map(_ => InvalidCurrency(normalized))
 
   def normalizeStatus(value: String): Either[ValidationError, EventStatus] =
-    normalizeEnumKey(value) match
-      case "SUCCESS" => Right(EventStatus.Success)
-      case "FAILED"  => Right(EventStatus.Failed)
-      case invalid   => Left(InvalidStatus(invalid))
+    val normalized = normalizeEnumKey(value)
+    EventStatus.fromCode(normalized).left.map(_ => InvalidStatus(normalized))
 
   def normalizePaymentMethod(value: String): Either[ValidationError, PaymentMethod] =
-    normalizeEnumKey(value) match
-      case "BLIK"     => Right(PaymentMethod.Blik)
-      case "CARD"     => Right(PaymentMethod.Card)
-      case "TRANSFER" => Right(PaymentMethod.Transfer)
-      case invalid    => Left(InvalidPaymentMethod(invalid))
+    val normalized = normalizeEnumKey(value)
+    PaymentMethod.fromCode(normalized).left.map(_ => InvalidPaymentMethod(normalized))
 
   def normalizeCountry(value: String): Either[ValidationError, String] =
     val normalized = normalizeEnumKey(value)
@@ -86,18 +77,9 @@ object EventNormalizer:
     )
 
   def normalizeMerchantCategory(value: String): Either[ValidationError, MerchantCategory] =
-    normalizeEnumKey(value) match
-      case "GROCERY"       => Right(MerchantCategory.Grocery)
-      case "ELECTRONICS"   => Right(MerchantCategory.Electronics)
-      case "TRAVEL"        => Right(MerchantCategory.Travel)
-      case "ENTERTAINMENT" => Right(MerchantCategory.Entertainment)
-      case "UTILITIES"     => Right(MerchantCategory.Utilities)
-      case "OTHER"         => Right(MerchantCategory.Other)
-      case invalid         => Left(InvalidMerchantCategory(invalid))
+    val normalized = normalizeEnumKey(value)
+    MerchantCategory.fromCode(normalized).left.map(_ => InvalidMerchantCategory(normalized))
 
   def normalizeChannel(value: String): Either[ValidationError, PaymentChannel] =
-    normalizeEnumKey(value) match
-      case "MOBILE" => Right(PaymentChannel.Mobile)
-      case "WEB"    => Right(PaymentChannel.Web)
-      case "POS"    => Right(PaymentChannel.Pos)
-      case invalid  => Left(InvalidPaymentChannel(invalid))
+    val normalized = normalizeEnumKey(value)
+    PaymentChannel.fromCode(normalized).left.map(_ => InvalidPaymentChannel(normalized))
