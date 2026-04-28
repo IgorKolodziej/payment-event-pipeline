@@ -38,4 +38,30 @@ class DoobieCustomerProfileLookupTest extends FunSuite:
     assertEquals(profile.fraudBefore, false)
     assertEquals(profile.createdAt, Instant.parse("2021-06-18T10:00:00Z"))
   }
+
+  test("customer row mapping rejects unsupported account currency code") {
+    val row = DoobieCustomerProfileLookup.CustomerRow(
+      id = 10,
+      firstName = "Beata",
+      lastName = "Krolak",
+      email = "b.krolak@firma.pl",
+      country = "PL",
+      accountCurrency = "XYZ",
+      balance = BigDecimal("5500.00"),
+      dailyLimit = BigDecimal("5000.00"),
+      hasBlik = 1,
+      hasCard = 0,
+      hasTransfer = 1,
+      isActive = true,
+      age = 38,
+      gender = "F",
+      lastLoginCountry = "PL",
+      fraudBefore = 0,
+      createdAt = LocalDateTime.parse("2021-06-18T10:00:00")
+    )
+
+    val error = intercept[IllegalArgumentException](row.toDomain)
+
+    assertEquals(error.getMessage, "Unsupported currency code: XYZ")
+  }
 end DoobieCustomerProfileLookupTest

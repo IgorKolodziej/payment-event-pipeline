@@ -307,6 +307,22 @@ class RiskEngineTest extends FunSuite:
     )
   }
 
+  test("evaluate includes current tracked payment in senior method shift count") {
+    val profile = customer.copy(age = 75)
+    val riskContext = context.copy(
+      blikTransferCountLast24h = RiskPolicy.default.seniorMethodShiftMinRecentCount - 1,
+      blikTransferCountLast30d = 0,
+      totalTransactionCountLast30d = RiskPolicy.default.seniorMethodShiftMinHistory
+    )
+
+    assertSingleAlert(
+      assess(enrichedWith(profile = profile), riskContext),
+      alertType = AlertType.SeniorMethodShiftAnomaly,
+      riskScore = RiskPolicy.default.seniorMethodShiftScore,
+      decision = RiskDecision.Approve
+    )
+  }
+
   test("evaluate does not flag senior method shift when method is Card") {
     val profile = customer.copy(age = 78)
     val normalizedEvent = event.copy(paymentMethod = PaymentMethod.Card)

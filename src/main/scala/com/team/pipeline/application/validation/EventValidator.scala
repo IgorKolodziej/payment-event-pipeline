@@ -3,7 +3,9 @@ package com.team.pipeline.application.validation
 import cats.data.NonEmptyChain
 import cats.data.ValidatedNec
 import cats.syntax.all.*
+import com.team.pipeline.domain.CustomerId
 import com.team.pipeline.domain.DataError
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.InvalidAmount
 import com.team.pipeline.domain.NormalizedPaymentEvent
 import com.team.pipeline.domain.RawPaymentEvent
@@ -15,7 +17,9 @@ object EventValidator:
       raw: RawPaymentEvent
   ): ValidatedNec[ValidationError, NormalizedPaymentEvent] =
     (
+      validateEventId(raw),
       validateTimestamp(raw),
+      validateCustomerId(raw),
       validateAmount(raw),
       validateCurrency(raw),
       validateStatus(raw),
@@ -25,7 +29,9 @@ object EventValidator:
       validateChannel(raw)
     ).mapN {
       case (
+            eventId,
             timestamp,
+            customerId,
             amount,
             currency,
             status,
@@ -35,9 +41,9 @@ object EventValidator:
             channel
           ) =>
         NormalizedPaymentEvent(
-          eventId = raw.eventId,
+          eventId = eventId,
           timestamp = timestamp,
-          customerId = raw.customerId,
+          customerId = customerId,
           amount = amount,
           currency = currency,
           status = status,
@@ -61,6 +67,12 @@ object EventValidator:
       customerId = Some(raw.customerId),
       reasons = reasons
     )
+
+  private def validateEventId(raw: RawPaymentEvent) =
+    EventId.fromInt(raw.eventId.value).toValidatedNec
+
+  private def validateCustomerId(raw: RawPaymentEvent) =
+    CustomerId.fromInt(raw.customerId.value).toValidatedNec
 
   private def validateTimestamp(raw: RawPaymentEvent) =
     EventNormalizer.normalizeTimestamp(raw.timestamp).toValidatedNec
