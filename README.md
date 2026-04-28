@@ -75,7 +75,7 @@ Expected default run shape:
 
 ```text
 Payment Event Processing Pipeline started. input=sample-data/small_events.jsonl, output=out
-Payment Event Processing Pipeline finished. read=200, processed=183, rejected=17, alerts=102
+Payment Event Processing Pipeline finished. read=200, processed=183, rejected=17, alerts=101
 ```
 
 Useful commands:
@@ -200,8 +200,8 @@ Expected result on a clean database with the current sample data:
 ```javascript
 {
   processed: 183,
-  alerts: 102,
-  violations: 162,
+  alerts: 101,
+  violations: 163,
   duplicateProcessedEventIds: 0
 }
 ```
@@ -218,7 +218,9 @@ Default collections:
 - `eligibility_violations` (idempotent upsert by `(eventId, violationType)`)
 - `alerts` (idempotent upsert by `(eventId, alertType)`)
 
-Recommended indexes:
+The app creates required indexes on startup. The definitions are idempotent and use stable names, so a clean local database and repeated app runs need no manual Mongo setup.
+
+Indexes created by the app:
 
 ```javascript
 use payment_pipeline
@@ -234,11 +236,13 @@ db.alerts.createIndex({ eventId: 1, alertType: 1 }, { unique: true })
 db.alerts.createIndex({ customerId: 1 })
 ```
 
-> create them manually in `mongosh`
-
-Manual verification:
+Optional inspection/debug commands:
 
 ```javascript
+db.processed_transactions.getIndexes()
+db.eligibility_violations.getIndexes()
+db.alerts.getIndexes()
+
 // Verify idempotency: rerun pipeline and ensure no duplicates by eventId
 db.processed_transactions.aggregate([
     { $group: { _id: "$eventId", c: { $sum: 1 } } },
