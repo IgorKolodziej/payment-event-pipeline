@@ -1,8 +1,10 @@
 package com.team.pipeline.application.reporting
 
+import cats.data.NonEmptyChain
 import com.team.pipeline.domain.Alert
 import com.team.pipeline.domain.AlertType
 import com.team.pipeline.domain.FinalDecision
+import com.team.pipeline.domain.InvalidAmount
 import com.team.pipeline.domain.InvalidJson
 import munit.FunSuite
 
@@ -31,6 +33,24 @@ class RunSummaryTest extends FunSuite:
 
     assertEquals(s.totalRejected, 1)
     assertEquals(s.errorCounts, Map("InvalidJson" -> 1))
+  }
+
+  test("onRejected counts every reason while incrementing totalRejected once") {
+    val s = RunSummary.empty.onRejected(
+      NonEmptyChain.of(
+        InvalidJson("boom"),
+        InvalidAmount(BigDecimal("-1.00"))
+      )
+    )
+
+    assertEquals(s.totalRejected, 1)
+    assertEquals(
+      s.errorCounts,
+      Map(
+        "InvalidJson" -> 1,
+        "InvalidAmount" -> 1
+      )
+    )
   }
 
   test("onProcessed increments totalProcessed and normalizes country") {

@@ -1,5 +1,6 @@
 package com.team.pipeline.application.validation
 
+import cats.data.NonEmptyChain
 import cats.data.ValidatedNec
 import cats.syntax.all.*
 import com.team.pipeline.domain.DataError
@@ -52,13 +53,13 @@ object EventValidator:
   def toRejected(
       sourcePosition: Long,
       raw: RawPaymentEvent,
-      reason: DataError
+      reasons: NonEmptyChain[DataError]
   ): RejectedEvent =
     RejectedEvent(
       sourcePosition = sourcePosition,
       eventId = Some(raw.eventId),
       customerId = Some(raw.customerId),
-      reason = reason
+      reasons = reasons
     )
 
   private def validateTimestamp(raw: RawPaymentEvent) =

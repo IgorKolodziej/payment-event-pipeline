@@ -129,12 +129,15 @@ class EventValidatorTest extends FunSuite:
     val rejected = EventValidator.toRejected(
       sourcePosition = 42,
       raw = validRaw,
-      reason = InvalidAmount(BigDecimal("-100.00"))
+      reasons = NonEmptyChain.one(InvalidAmount(BigDecimal("-100.00")))
     )
 
     assertEquals(rejected.sourcePosition, 42L)
     assertEquals(rejected.eventId, Some(1))
     assertEquals(rejected.customerId, Some(10))
-    assertEquals(rejected.reason, InvalidAmount(BigDecimal("-100.00")))
+    assertEquals(
+      rejected.reasons,
+      NonEmptyChain.one(InvalidAmount(BigDecimal("-100.00")))
+    )
   }
 end EventValidatorTest
