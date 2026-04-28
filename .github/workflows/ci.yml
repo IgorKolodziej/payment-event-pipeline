@@ -29,3 +29,32 @@ jobs:
 
       - name: Check formatting and run tests
         run: sbt scalafmtCheckAll scalafmtSbtCheck test
+
+  coverage:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: sbt
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Generate coverage report
+        run: sbt clean coverage test coverageReport
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: target/scala-3.3.7/scoverage-report/scoverage.xml
+          flags: scala
+          name: scala-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false

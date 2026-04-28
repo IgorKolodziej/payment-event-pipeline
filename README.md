@@ -81,6 +81,7 @@ Useful commands:
 
 ```bash
 sbt test
+sbt clean coverage test coverageReport
 sbt scalafmt
 sbt Test/scalafmt
 sbt scalafmtCheckAll
@@ -107,6 +108,7 @@ docker compose exec mongo mongosh
 ## CI
 
 GitHub Actions runs formatting checks and the unit test suite on pull requests and pushes to `main`.
+The coverage job generates an scoverage XML report and uploads it to Codecov when available.
 Docker-based integration checks for PostgreSQL, MongoDB, and Redpanda remain manual local verification steps.
 
 ## Input Modes
