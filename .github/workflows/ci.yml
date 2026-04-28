@@ -6,9 +6,12 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out repository
@@ -24,8 +27,5 @@ jobs:
       - name: Set up sbt
         uses: sbt/setup-sbt@v1
 
-      - name: Check formatting
-        run: sbt scalafmtCheckAll
-
-      - name: Run tests
-        run: sbt test
+      - name: Check formatting and run tests
+        run: sbt scalafmtCheckAll scalafmtSbtCheck test
