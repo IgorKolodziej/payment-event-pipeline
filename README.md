@@ -69,6 +69,7 @@ Useful commands:
 sbt test
 sbt scalafmt
 sbt Test/scalafmt
+sbt scalafmtCheckAll
 docker compose ps -a
 docker compose logs postgres
 docker compose logs mongo
@@ -88,6 +89,11 @@ Open Mongo shell:
 ```bash
 docker compose exec mongo mongosh
 ```
+
+## CI
+
+GitHub Actions runs formatting checks and the unit test suite on pull requests and pushes to `main`.
+Docker-based integration checks for PostgreSQL, MongoDB, and Redpanda remain manual local verification steps.
 
 ## Input Modes
 
