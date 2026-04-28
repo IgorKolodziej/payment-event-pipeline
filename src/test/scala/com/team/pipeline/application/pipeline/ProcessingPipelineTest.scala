@@ -1,5 +1,9 @@
 package com.team.pipeline.application.pipeline
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.CustomerId.*
+import com.team.pipeline.domain.EventId
+import com.team.pipeline.domain.EventId.*
 import cats.effect.IO
 import cats.effect.Ref
 import cats.syntax.all.*
@@ -124,7 +128,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
     for
       fixture <- TestFixture.create(customers = Map.empty)
       summary <- ProcessingPipeline.run(
-        Stream.emit(EventSource.InputRecord(7, validLine(customerId = 999))),
+        Stream.emit(EventSource.InputRecord(7, validLine(customerId = CustomerId(999)))),
         fixture.dependencies
       )
       lookupCalls <- fixture.lookupCalls.get
@@ -136,7 +140,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       assertEquals(summary.totalProcessed, 0)
       assertEquals(summary.totalRejected, 1)
       assertEquals(summary.errorCounts, Map("CustomerNotFound" -> 1))
-      assertEquals(lookupCalls, Vector(999))
+      assertEquals(lookupCalls, Vector(CustomerId(999)))
       assertEquals(contextCalls, Vector.empty)
       assertEquals(savedProcessed, Vector.empty)
       assertEquals(savedAlerts, Vector.empty)
@@ -166,7 +170,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       assertEquals(summary.alertCounts, Map("PreviouslyFlaggedCustomer" -> 1))
       assertEquals(summary.countryCounts, Map("PL" -> 1))
       assertEquals(lookupCalls, Vector(customer.customerId))
-      assertEquals(contextCalls, Vector(100))
+      assertEquals(contextCalls, Vector(EventId(100)))
       assertEquals(savedProcessed.size, 1)
       assertEquals(savedProcessed.head.riskScore, 20)
       assertEquals(savedProcessed.head.riskDecision, RiskDecision.Review)
@@ -197,7 +201,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       assertEquals(summary.totalRejected, 0)
       assertEquals(summary.totalAlerts, 0)
       assertEquals(summary.decisionCounts, Map("Declined" -> 1))
-      assertEquals(contextCalls, Vector(100))
+      assertEquals(contextCalls, Vector(EventId(100)))
       assertEquals(savedProcessed.size, 1)
       assertEquals(savedProcessed.head.riskScore, 0)
       assertEquals(savedProcessed.head.riskDecision, RiskDecision.NotEvaluated)
@@ -238,8 +242,8 @@ class ProcessingPipelineTest extends CatsEffectSuite:
 
   private final case class TestFixture(
       dependencies: ProcessingPipeline.Dependencies,
-      lookupCalls: Ref[IO, Vector[Int]],
-      contextCalls: Ref[IO, Vector[Int]],
+      lookupCalls: Ref[IO, Vector[CustomerId]],
+      contextCalls: Ref[IO, Vector[EventId]],
       savedProcessed: Ref[IO, Vector[ProcessedEvent]],
       savedViolations: Ref[IO, Vector[EligibilityViolation]],
       savedAlerts: Ref[IO, Vector[Alert]],
@@ -248,29 +252,29 @@ class ProcessingPipelineTest extends CatsEffectSuite:
 
   private object TestFixture:
     def create(
-        customers: Map[Int, CustomerProfile],
+        customers: Map[CustomerId, CustomerProfile],
         context: CustomerRiskContext = emptyContext
     ): IO[TestFixture] =
       for
-        lookupCalls <- Ref[IO].of(Vector.empty[Int])
-        contextCalls <- Ref[IO].of(Vector.empty[Int])
+        lookupCalls <- Ref[IO].of(Vector.empty[CustomerId])
+        contextCalls <- Ref[IO].of(Vector.empty[EventId])
         savedProcessed <- Ref[IO].of(Vector.empty[ProcessedEvent])
         savedViolations <- Ref[IO].of(Vector.empty[EligibilityViolation])
         savedAlerts <- Ref[IO].of(Vector.empty[Alert])
         order <- Ref[IO].of(Vector.empty[String])
       yield
         val customerLookup = new CustomerProfileLookup:
-          override def find(customerId: Int): IO[Option[CustomerProfile]] =
+          override def find(customerId: CustomerId): IO[Option[CustomerProfile]] =
             lookupCalls.update(_ :+ customerId).as(customers.get(customerId))
 
         val riskFeatureProvider = new RiskFeatureProvider:
           override def contextFor(event: EnrichedPaymentEvent): IO[CustomerRiskContext] =
-            order.update(_ :+ s"context:${event.event.eventId}") *>
+            order.update(_ :+ s"context:${event.event.eventId.value}") *>
               contextCalls.update(_ :+ event.event.eventId).as(context)
 
         val processedEventStore = new ProcessedEventStore:
           override def save(event: ProcessedEvent): IO[Unit] =
-            order.update(_ :+ s"processed:${event.eventId}") *>
+            order.update(_ :+ s"processed:${event.eventId.value}") *>
               savedProcessed.update(_ :+ event)
 
         val eligibilityViolationStore = new EligibilityViolationStore:
@@ -308,7 +312,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
         )
 
   private val customer = CustomerProfile(
-    customerId = 10,
+    customerId = CustomerId(10),
     firstName = "Beata",
     lastName = "Krolak",
     email = "b.krolak@firma.pl",
@@ -340,13 +344,13 @@ class ProcessingPipelineTest extends CatsEffectSuite:
   )
 
   private def validLine(
-      eventId: Int = 100,
-      customerId: Int = customer.customerId,
+      eventId: EventId = EventId(100),
+      customerId: CustomerId = customer.customerId,
       amount: String = "150.00",
       status: String = "SUCCESS",
       currency: String = "PLN",
       paymentMethod: String = "BLIK",
       transactionCountry: String = "PL"
   ): String =
-    s"""{"eventId":$eventId,"timestamp":"2026-04-24T10:00:00Z","customerId":$customerId,"amount":$amount,"currency":"$currency","status":"$status","paymentMethod":"$paymentMethod","transactionCountry":"$transactionCountry","merchantId":"M001","merchantCategory":"GROCERY","channel":"MOBILE","deviceId":"device-001"}"""
+    s"""{"eventId":${eventId.value},"timestamp":"2026-04-24T10:00:00Z","customerId":${customerId.value},"amount":$amount,"currency":"$currency","status":"$status","paymentMethod":"$paymentMethod","transactionCountry":"$transactionCountry","merchantId":"M001","merchantCategory":"GROCERY","channel":"MOBILE","deviceId":"device-001"}"""
 end ProcessingPipelineTest

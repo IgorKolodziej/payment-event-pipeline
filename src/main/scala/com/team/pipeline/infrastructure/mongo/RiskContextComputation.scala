@@ -3,6 +3,7 @@ package com.team.pipeline.infrastructure.mongo
 import com.team.pipeline.application.risk.CustomerRiskContext
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.domain.EnrichedPaymentEvent
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentMethod
@@ -16,7 +17,7 @@ import java.time.ZoneOffset
 object RiskContextComputation:
 
   final case class HistoryEvent(
-      eventId: Int,
+      eventId: EventId,
       timestamp: Instant,
       amount: BigDecimal,
       status: EventStatus,

@@ -6,6 +6,7 @@ import cats.syntax.all.*
 import com.team.pipeline.application.parsing.EventParser
 import com.team.pipeline.config.AppConfig
 import com.team.pipeline.config.KafkaConfig
+import com.team.pipeline.domain.CustomerId.*
 import com.team.pipeline.infrastructure.file.JsonlInput
 import fs2.Stream
 import fs2.kafka.Acks
@@ -87,7 +88,7 @@ object PublishSampleEvents extends IOApp.Simple:
     ProducerRecord(topic, customerKey(line), line)
 
   private[tools] def customerKey(line: String): Option[String] =
-    EventParser.parseLine(line).toOption.map(event => event.customerId.toString)
+    EventParser.parseLine(line).toOption.map(event => event.customerId.value.toString)
 
   private def delaySummary(settings: PublisherSettings): String =
     if settings.delay.length > 0 then s"delay=${settings.delay.toMillis} ms"

@@ -1,5 +1,7 @@
 package com.team.pipeline.application.validation
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.InvalidCurrency
@@ -18,9 +20,9 @@ import munit.FunSuite
 class EventNormalizerTest extends FunSuite:
 
   private val validRaw = RawPaymentEvent(
-    eventId = 1,
+    eventId = EventId(1),
     timestamp = "2024-01-01T10:15:30Z",
-    customerId = 10,
+    customerId = CustomerId(10),
     amount = BigDecimal("12.34"),
     currency = " pln ",
     status = " success ",
@@ -37,8 +39,8 @@ class EventNormalizerTest extends FunSuite:
     assert(out.isRight)
 
     val normalized = out.toOption.get
-    assertEquals(normalized.eventId, 1)
-    assertEquals(normalized.customerId, 10)
+    assertEquals(normalized.eventId, EventId(1))
+    assertEquals(normalized.customerId, CustomerId(10))
     assertEquals(normalized.amount, BigDecimal("12.34"))
     assertEquals(normalized.currency, Currency.PLN)
     assertEquals(normalized.status, EventStatus.Success)

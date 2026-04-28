@@ -1,5 +1,7 @@
 package com.team.pipeline.application.reporting
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import cats.data.NonEmptyChain
 import com.team.pipeline.domain.Alert
 import com.team.pipeline.domain.AlertType
@@ -77,22 +79,22 @@ class RunSummaryTest extends FunSuite:
     val alerts = List(
       Alert(
         alertType = AlertType.CountryMismatch,
-        eventId = 1,
-        customerId = 10,
+        eventId = EventId(1),
+        customerId = CustomerId(10),
         message = "mismatch",
         riskScore = 20
       ),
       Alert(
         alertType = AlertType.CountryMismatch,
-        eventId = 2,
-        customerId = 11,
+        eventId = EventId(2),
+        customerId = CustomerId(11),
         message = "mismatch",
         riskScore = 15
       ),
       Alert(
         alertType = AlertType.LateNightTransaction,
-        eventId = 3,
-        customerId = 12,
+        eventId = EventId(3),
+        customerId = CustomerId(12),
         message = "late",
         riskScore = 10
       )

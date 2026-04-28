@@ -18,4 +18,4 @@ final case class InvalidTransactionCountry(value: String) extends ValidationErro
 final case class InvalidMerchantCategory(value: String) extends ValidationError
 final case class InvalidPaymentChannel(value: String) extends ValidationError
 
-final case class CustomerNotFound(customerId: Int) extends EnrichmentError
+final case class CustomerNotFound(customerId: CustomerId) extends EnrichmentError

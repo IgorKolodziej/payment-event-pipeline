@@ -1,5 +1,7 @@
 package com.team.pipeline.application.enrichment
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.domain.CustomerNotFound
 import com.team.pipeline.domain.CustomerProfile
@@ -15,9 +17,9 @@ import java.time.Instant
 
 class EventEnricherTest extends FunSuite:
   private val event = NormalizedPaymentEvent(
-    eventId = 100,
+    eventId = EventId(100),
     timestamp = Instant.parse("2026-04-24T10:00:00Z"),
-    customerId = 10,
+    customerId = CustomerId(10),
     amount = BigDecimal("150.00"),
     currency = Currency.PLN,
     status = EventStatus.Success,
@@ -30,7 +32,7 @@ class EventEnricherTest extends FunSuite:
   )
 
   private val customer = CustomerProfile(
-    customerId = 10,
+    customerId = CustomerId(10),
     firstName = "Beata",
     lastName = "Krolak",
     email = "B.Krolak@Firma.PL",

@@ -5,9 +5,9 @@ import cats.data.NonEmptyChain
 import java.time.Instant
 
 final case class RawPaymentEvent(
-    eventId: Int,
+    eventId: EventId,
     timestamp: String,
-    customerId: Int,
+    customerId: CustomerId,
     amount: BigDecimal,
     currency: String,
     status: String,
@@ -20,9 +20,9 @@ final case class RawPaymentEvent(
 )
 
 final case class NormalizedPaymentEvent(
-    eventId: Int,
+    eventId: EventId,
     timestamp: Instant,
-    customerId: Int,
+    customerId: CustomerId,
     amount: BigDecimal,
     currency: Currency,
     status: EventStatus,
@@ -35,7 +35,7 @@ final case class NormalizedPaymentEvent(
 )
 
 final case class CustomerProfile(
-    customerId: Int,
+    customerId: CustomerId,
     firstName: String,
     lastName: String,
     email: String,
@@ -65,8 +65,8 @@ final case class EligibilityAssessment(
 
 final case class EligibilityViolation(
     violationType: EligibilityViolationType,
-    eventId: Int,
-    customerId: Int,
+    eventId: EventId,
+    customerId: CustomerId,
     message: String
 )
 
@@ -83,8 +83,8 @@ final case class PaymentAssessment(
 )
 
 final case class ProcessedEvent(
-    eventId: Int,
-    customerId: Int,
+    eventId: EventId,
+    customerId: CustomerId,
     timestamp: Instant,
     amount: BigDecimal,
     currency: Currency,
@@ -105,15 +105,15 @@ final case class ProcessedEvent(
 
 final case class Alert(
     alertType: AlertType,
-    eventId: Int,
-    customerId: Int,
+    eventId: EventId,
+    customerId: CustomerId,
     message: String,
     riskScore: Int
 )
 
 final case class RejectedEvent(
     sourcePosition: Long,
-    eventId: Option[Int],
-    customerId: Option[Int],
+    eventId: Option[EventId],
+    customerId: Option[CustomerId],
     reasons: NonEmptyChain[DataError]
 )

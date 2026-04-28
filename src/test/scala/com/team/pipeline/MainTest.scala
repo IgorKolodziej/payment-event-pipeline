@@ -1,5 +1,7 @@
 package com.team.pipeline
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import cats.effect.IO
 import cats.effect.Ref
 import cats.effect.Resource
@@ -98,7 +100,7 @@ class MainTest extends CatsEffectSuite:
       savedProcessed: Ref[IO, Vector[ProcessedEvent]]
   ): ProcessingPipeline.Dependencies =
     val customerLookup = new CustomerProfileLookup:
-      override def find(customerId: Int): IO[Option[CustomerProfile]] =
+      override def find(customerId: CustomerId): IO[Option[CustomerProfile]] =
         IO.pure(Some(customer))
 
     val riskFeatureProvider = new RiskFeatureProvider:
@@ -161,7 +163,7 @@ class MainTest extends CatsEffectSuite:
     )
 
   private val customer = CustomerProfile(
-    customerId = 10,
+    customerId = CustomerId(10),
     firstName = "Beata",
     lastName = "Krolak",
     email = "b.krolak@firma.pl",
