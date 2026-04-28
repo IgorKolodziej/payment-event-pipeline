@@ -7,6 +7,8 @@ A Scala 3 payment-event processing pipeline for local replay and broker-backed s
 
 The application reads payment events from JSONL files or Redpanda, validates and normalizes them, enriches them with PostgreSQL customer data, evaluates eligibility and risk rules, and persists processed transactions, alerts, and violations to MongoDB.
 
+The project is intentionally backend-focused: it demonstrates a realistic payment-risk replay pipeline with deterministic processing, explicit domain contracts, and infrastructure kept behind small ports. It is designed as a local/demo system, not as a production banking platform.
+
 ## Highlights
 
 - Multiple input modes behind one `EventSource` port: fast file replay, paced file replay, and Redpanda.
@@ -16,8 +18,19 @@ The application reads payment events from JSONL files or Redpanda, validates and
 - MongoDB-backed processing history used for risk context.
 - Separate eligibility checks and risk scoring, so invalid payments are not mixed with fraud/anomaly decisions.
 - Idempotent MongoDB writes for processed events, alerts, and eligibility violations.
+- Explicit money/currency contract: account currency mismatches are eligibility declines, without synthetic FX conversion.
+- Opaque `EventId` and `CustomerId` domain types, stable enum persistence codes, and validated startup configuration.
+- Hikari-backed PostgreSQL access and automatic MongoDB index initialization during application startup.
 - Sample publisher for Redpanda, including optional event pacing for live-style demos.
 - MUnit test suite and GitHub Actions CI.
+
+## What This Demonstrates
+
+- Hexagonal architecture with narrow ports and replaceable adapters.
+- Functional core and effectful shell: pure parsing, validation, enrichment, eligibility, risk, and reporting logic wrapped by Cats Effect at the boundaries.
+- Deterministic replay semantics: file input is processed in order, and risk context is built from previously persisted events.
+- Explainable payment decisions: deterministic eligibility violations are separated from scored fraud/anomaly alerts.
+- Operational discipline for a local project: typed config validation, bounded PostgreSQL pooling, idempotent Mongo persistence, automatic indexes, CI, and coverage reporting.
 
 ## Architecture
 
@@ -31,7 +44,7 @@ EventSource
   -> EligibilityChecker + RiskEngine
   -> PaymentDecisionEngine
   -> MongoDB stores
-  -> RunSummary / dashboard snapshot data
+  -> RunSummary / in-memory dashboard snapshot model
 ```
 
 The core pipeline depends on small ports, not concrete infrastructure. File replay, paced replay, Redpanda, PostgreSQL, and MongoDB live behind adapters in `infrastructure`.
@@ -53,6 +66,8 @@ The core pipeline depends on small ports, not concrete infrastructure. File repl
 ## Current Status
 
 The repository has a working end-to-end local pipeline. Docker Compose starts PostgreSQL, MongoDB, and Redpanda; seed/sample data are included; CI runs formatting checks and the unit test suite.
+
+The current application persists processed transactions, eligibility violations, and risk alerts to MongoDB and prints a run summary. It does not yet write report or dashboard files into `out/`; that directory is reserved for generated artifacts.
 
 ## Local Setup
 
@@ -81,6 +96,7 @@ Payment Event Processing Pipeline finished. read=200, processed=183, rejected=17
 Useful commands:
 
 ```bash
+sbt scalafmtCheckAll scalafmtSbtCheck test
 sbt test
 sbt clean coverage test coverageReport
 sbt scalafmt
@@ -112,15 +128,21 @@ GitHub Actions runs formatting checks and the unit test suite on pull requests a
 The coverage job generates an scoverage XML report and uploads it to Codecov when available.
 Docker-based integration checks for PostgreSQL, MongoDB, and Redpanda remain manual local verification steps.
 
+The local CI-equivalent command is:
+
+```bash
+sbt scalafmtCheckAll scalafmtSbtCheck test
+```
+
 ## Input Modes
 
-The app reads events through an `EventSource` abstraction. Current local sources:
+The app reads events through an `EventSource` abstraction. Current sources:
 
 - `file`: fast JSONL replay, used by default.
-- `paced-file`: JSONL replay with a fixed delay between records, useful for simulating incrementally arriving events during demos or dashboard refresh work.
+- `paced-file`: JSONL replay with a fixed delay between records, useful for simulating incrementally arriving events during demos.
 - `redpanda`: Kafka-compatible broker input using local Redpanda.
 
-Configure the mode in `src/main/resources/application.conf`:
+Defaults live in `src/main/resources/application.conf`:
 
 ```hocon
 app {
@@ -133,11 +155,8 @@ app {
 
 For paced replay, use:
 
-```hocon
-app {
-  inputMode = "paced-file"
-  streamDelayMillis = 250
-}
+```bash
+set -a && source .env && export APP_INPUT_MODE=paced-file APP_STREAM_DELAY_MILLIS=250 && set +a && sbt run
 ```
 
 The pacing is implemented at the source boundary with FS2. The processing pipeline itself contains no sleeps and does not know whether records came from fast file replay or paced replay.
@@ -253,12 +272,22 @@ db.processed_transactions.aggregate([
 db.processed_transactions.find({ customerId: 10 }).sort({ timestamp: 1 })
 ```
 
+## Project Boundaries
+
+This repository is a realistic local/demo backend project, but it deliberately does not claim production payment-processing guarantees.
+
+- Redpanda mode is replay-safe for this project but does not commit Kafka offsets.
+- MongoDB stores an idempotent current projection, not an append-only audit ledger.
+- Currency mismatches are declined through eligibility rules; no FX conversion is modeled.
+- Docker-backed integration checks are currently manual rather than part of CI.
+- The risk engine is deterministic and explainable, not a machine-learning model or a generic rule DSL.
+
 ## Repository Notes
 
 - `.env` is local and must not be committed.
 - `scripts/seed_postgres.sql` seeds the local customer table.
 - `sample-data/` contains example input data.
-- `out/` is used for generated run artifacts.
+- `out/` is reserved for generated run artifacts.
 
 ## Current Repository Layout
 
@@ -295,12 +324,12 @@ payment-event-pipeline/
         └── scala/com/team/pipeline/
 ```
 
-## Workflow Rules
+## Development
 
 - Work on short-lived feature branches.
 - Keep commits focused and readable.
 - Format before committing.
-- Run tests before opening a PR.
+- Run `sbt scalafmtCheckAll scalafmtSbtCheck test` before opening a PR.
 - Do not commit secrets or generated output files.
 - Keep code changes small, tested, and aligned with the agreed project scope.
 
