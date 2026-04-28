@@ -40,6 +40,7 @@ class RiskContextComputationTest extends FunSuite:
     lastName = "Krolak",
     email = "b.krolak@firma.pl",
     country = "PL",
+    accountCurrency = Currency.PLN,
     balance = BigDecimal("5500.00"),
     dailyLimit = BigDecimal("5000.00"),
     allowedPaymentMethods = Set(PaymentMethod.Blik, PaymentMethod.Transfer),

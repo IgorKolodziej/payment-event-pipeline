@@ -1,5 +1,6 @@
 package com.team.pipeline.infrastructure.postgres
 
+import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.PaymentMethod
 import munit.FunSuite
 
@@ -14,6 +15,7 @@ class DoobieCustomerProfileLookupTest extends FunSuite:
       lastName = "Krolak",
       email = "b.krolak@firma.pl",
       country = "PL",
+      accountCurrency = "PLN",
       balance = BigDecimal("5500.00"),
       dailyLimit = BigDecimal("5000.00"),
       hasBlik = 1,
@@ -30,6 +32,7 @@ class DoobieCustomerProfileLookupTest extends FunSuite:
     val profile = row.toDomain
 
     assertEquals(profile.customerId, 10)
+    assertEquals(profile.accountCurrency, Currency.PLN)
     assertEquals(profile.allowedPaymentMethods, Set(PaymentMethod.Blik, PaymentMethod.Transfer))
     assertEquals(profile.fraudBefore, false)
     assertEquals(profile.createdAt, Instant.parse("2021-06-18T10:00:00Z"))

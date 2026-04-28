@@ -25,6 +25,7 @@ object MongoDocumentMapping:
         .append("channel", event.channel.toString)
         .append("deviceId", event.deviceId)
         .append("customerCountry", event.customerCountry)
+        .append("customerAccountCurrency", event.customerAccountCurrency.toString)
         .append("hashedCustomerEmail", event.hashedCustomerEmail)
         .append("riskScore", event.riskScore)
         .append("riskDecision", event.riskDecision.toString)

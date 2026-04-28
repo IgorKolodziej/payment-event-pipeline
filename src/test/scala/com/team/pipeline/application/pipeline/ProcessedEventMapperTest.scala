@@ -44,6 +44,7 @@ class ProcessedEventMapperTest extends FunSuite:
     lastName = "Krolak",
     email = "b.krolak@firma.pl",
     country = "PL",
+    accountCurrency = Currency.PLN,
     balance = BigDecimal("5500.00"),
     dailyLimit = BigDecimal("5000.00"),
     allowedPaymentMethods = Set(PaymentMethod.Blik, PaymentMethod.Transfer),
@@ -89,6 +90,7 @@ class ProcessedEventMapperTest extends FunSuite:
     assertEquals(processed.channel, normalized.channel)
     assertEquals(processed.deviceId, normalized.deviceId)
     assertEquals(processed.customerCountry, customer.country)
+    assertEquals(processed.customerAccountCurrency, customer.accountCurrency)
     assertEquals(processed.hashedCustomerEmail, enriched.hashedCustomerEmail)
     assertEquals(processed.riskScore, 0)
     assertEquals(processed.riskDecision, RiskDecision.Approve)

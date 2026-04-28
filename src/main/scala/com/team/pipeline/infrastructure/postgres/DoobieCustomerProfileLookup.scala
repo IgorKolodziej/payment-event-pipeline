@@ -1,6 +1,7 @@
 package com.team.pipeline.infrastructure.postgres
 
 import cats.effect.IO
+import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.CustomerProfile
 import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.ports.CustomerProfileLookup
@@ -25,6 +26,7 @@ final class DoobieCustomerProfileLookup(transactor: Transactor[IO])
         last_name,
         email,
         country,
+        account_currency,
         balance,
         daily_limit,
         has_blik,
@@ -51,6 +53,7 @@ object DoobieCustomerProfileLookup:
       String,
       String,
       String,
+      String,
       BigDecimal,
       BigDecimal,
       Int,
@@ -70,6 +73,7 @@ object DoobieCustomerProfileLookup:
       lastName: String,
       email: String,
       country: String,
+      accountCurrency: String,
       balance: BigDecimal,
       dailyLimit: BigDecimal,
       hasBlik: Int,
@@ -89,6 +93,7 @@ object DoobieCustomerProfileLookup:
         lastName = lastName,
         email = email,
         country = country,
+        accountCurrency = Currency.valueOf(accountCurrency.trim),
         balance = balance,
         dailyLimit = dailyLimit,
         allowedPaymentMethods = paymentMethods(
