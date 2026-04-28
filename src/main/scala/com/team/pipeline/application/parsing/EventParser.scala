@@ -15,7 +15,7 @@ import io.circe.ParsingFailure
 import io.circe.parser.decode
 
 object EventParser:
-  given Decoder[RawPaymentEvent] =
+  private given Decoder[RawPaymentEvent] =
     Decoder.instance { cursor =>
       for
         eventId <- cursor.downField("eventId").as[Int]
