@@ -1,10 +1,41 @@
 # Payment Event Processing Pipeline
 
-Scala 3 team project for a local payment-event processing pipeline.
+[![CI](https://github.com/IgorKolodziej/payment-event-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/IgorKolodziej/payment-event-pipeline/actions/workflows/ci.yml)
 
-This repository contains a local payment-event processing pipeline with JSONL replay input, PostgreSQL-backed customer enrichment, MongoDB-backed processing history, risk assessment, and summary reporting. Internal planning notes are kept locally outside Git.
+A Scala 3 payment-event processing pipeline for local replay and broker-backed stream processing.
 
-## Frozen Baseline
+The application reads payment events from JSONL files or Redpanda, validates and normalizes them, enriches them with PostgreSQL customer data, evaluates eligibility and risk rules, and persists processed transactions, alerts, and violations to MongoDB.
+
+## Highlights
+
+- Multiple input modes behind one `EventSource` port: fast file replay, paced file replay, and Redpanda.
+- Functional streaming with FS2 and Cats Effect.
+- JSON parsing with Circe and explicit domain error mapping.
+- Customer enrichment through Doobie/PostgreSQL.
+- MongoDB-backed processing history used for risk context.
+- Separate eligibility checks and risk scoring, so invalid payments are not mixed with fraud/anomaly decisions.
+- Idempotent MongoDB writes for processed events, alerts, and eligibility violations.
+- Sample publisher for Redpanda, including optional event pacing for live-style demos.
+- MUnit test suite and GitHub Actions CI.
+
+## Architecture
+
+```text
+EventSource
+  -> EventParser
+  -> EventValidator / EventNormalizer
+  -> CustomerProfileLookup(PostgreSQL)
+  -> EventEnricher
+  -> RiskFeatureProvider(MongoDB)
+  -> EligibilityChecker + RiskEngine
+  -> PaymentDecisionEngine
+  -> MongoDB stores
+  -> RunSummary / dashboard snapshot data
+```
+
+The core pipeline depends on small ports, not concrete infrastructure. File replay, paced replay, Redpanda, PostgreSQL, and MongoDB live behind adapters in `infrastructure`.
+
+## Technology
 
 - JDK `25`
 - Scala `3.3.7`
@@ -15,29 +46,12 @@ This repository contains a local payment-event processing pipeline with JSONL re
 - Doobie
 - PostgreSQL
 - MongoDB
+- Redpanda
 - MUnit
 
 ## Current Status
 
-The repository has a working end-to-end local pipeline:
-
-- build toolchain is configured,
-- PostgreSQL and MongoDB start locally,
-- Redpanda starts locally as a Kafka-compatible broker,
-- PostgreSQL seed data loads,
-- sample input data exists and is ordered for event-time replay,
-- the app streams JSONL or Redpanda records through parsing, validation, enrichment, eligibility, risk, persistence, and summary aggregation,
-- processed events, alerts, and eligibility violations are written to MongoDB,
-- formatting works,
-- tests run.
-
-## Team
-
-- Igor Kołodziej
-- Hubert Kowalski
-- Kacper Wadas
-- Oliwia Strzechowska
-- Roksana Rogalska
+The repository has a working end-to-end local pipeline. Docker Compose starts PostgreSQL, MongoDB, and Redpanda; seed/sample data are included; CI runs formatting checks and the unit test suite.
 
 ## Local Setup
 
@@ -238,12 +252,16 @@ db.processed_transactions.find({ customerId: 10 }).sort({ timestamp: 1 })
 - `scripts/seed_postgres.sql` seeds the local customer table.
 - `sample-data/` contains example input data.
 - `out/` is used for generated run artifacts.
-- internal planning and issue notes are local-only and must not be committed.
 
 ## Current Repository Layout
 
 ```text
 payment-event-pipeline/
+├── .github/workflows/
+│   └── ci.yml
+├── project/
+│   ├── build.properties
+│   └── plugins.sbt
 ├── build.sbt
 ├── docker-compose.yml
 ├── .env.example
@@ -260,13 +278,14 @@ payment-event-pipeline/
     │   │   └── application.conf
     │   └── scala/com/team/pipeline/
     │       ├── Main.scala
-    │       └── config/
-    │           └── AppConfig.scala
+    │       ├── application/
+    │       ├── config/
+    │       ├── domain/
+    │       ├── infrastructure/
+    │       ├── ports/
+    │       └── tools/
     └── test/
         └── scala/com/team/pipeline/
-            ├── PilotTest.scala
-            └── config/
-                └── AppConfigTest.scala
 ```
 
 ## Workflow Rules
@@ -277,6 +296,14 @@ payment-event-pipeline/
 - Run tests before opening a PR.
 - Do not commit secrets or generated output files.
 - Keep code changes small, tested, and aligned with the agreed project scope.
+
+## Team
+
+- Igor Kołodziej
+- Hubert Kowalski
+- Kacper Wadas
+- Oliwia Strzechowska
+- Roksana Rogalska
 
 ## License
 
