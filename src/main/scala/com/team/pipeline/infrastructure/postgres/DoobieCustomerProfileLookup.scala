@@ -97,7 +97,7 @@ object DoobieCustomerProfileLookup:
         lastName = lastName,
         email = email,
         country = country,
-        accountCurrency = Currency.valueOf(accountCurrency.trim),
+        accountCurrency = parseCurrency(accountCurrency),
         balance = balance,
         dailyLimit = dailyLimit,
         allowedPaymentMethods = paymentMethods(
@@ -111,6 +111,12 @@ object DoobieCustomerProfileLookup:
         lastLoginCountry = lastLoginCountry,
         fraudBefore = fraudBefore == 1,
         createdAt = createdAt.toInstant(ZoneOffset.UTC)
+      )
+
+    private def parseCurrency(value: String): Currency =
+      Currency.fromCode(value).fold(
+        error => throw new IllegalArgumentException(error),
+        identity
       )
 
   private[postgres] given Read[CustomerRow] =

@@ -187,7 +187,8 @@ object RiskEngine:
     val hasHistory = context.totalTransactionCountLast30d >= policy.seniorMethodShiftMinHistory
 
     val baselineDaily = BigDecimal(context.blikTransferCountLast30d) / BigDecimal(30)
-    val recentCount = BigDecimal(context.blikTransferCountLast24h)
+    val currentTrackedCount = if isMethodTracked then 1 else 0
+    val recentCount = BigDecimal(context.blikTransferCountLast24h + currentTrackedCount)
     val spikeByMultiplier =
       baselineDaily > 0 && recentCount >= baselineDaily * policy.seniorMethodShiftMultiplier
     val spikeFromZeroBaseline =

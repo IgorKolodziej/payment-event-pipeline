@@ -7,6 +7,8 @@ import cats.data.Validated.Invalid
 import cats.data.Validated.Valid
 import com.team.pipeline.domain.Currency
 import com.team.pipeline.domain.EventStatus
+import com.team.pipeline.domain.InvalidCustomerId
+import com.team.pipeline.domain.InvalidEventId
 import com.team.pipeline.domain.InvalidAmount
 import com.team.pipeline.domain.InvalidCurrency
 import com.team.pipeline.domain.InvalidMerchantCategory
@@ -76,6 +78,19 @@ class EventValidatorTest extends FunSuite:
       EventValidator.validateAndNormalize(raw),
       Invalid(NonEmptyChain.one(InvalidAmount(BigDecimal("-100.00"))))
     )
+  }
+
+  test("non-positive event and customer IDs are reported") {
+    val raw = validRaw.copy(eventId = EventId(0), customerId = CustomerId(-1))
+
+    EventValidator.validateAndNormalize(raw) match
+      case Invalid(errors) =>
+        assertEquals(
+          errors.toNonEmptyList.toList,
+          List(InvalidEventId(0), InvalidCustomerId(-1))
+        )
+      case Valid(event) =>
+        fail(s"Expected validation to fail, but got: $event")
   }
 
   test("invalid status is reported") {

@@ -6,6 +6,7 @@ import com.team.pipeline.application.risk.RiskEngine
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.domain.EligibilityDecision
 import com.team.pipeline.domain.EnrichedPaymentEvent
+import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentAssessment
 import com.team.pipeline.domain.RiskAssessment
@@ -31,12 +32,14 @@ object PaymentDecisionEngine:
         PaymentAssessment(
           eligibility = eligibility,
           risk = Some(risk),
-          finalDecision = finalDecisionFor(risk)
+          finalDecision = finalDecisionFor(event, risk)
         )
 
-  private def finalDecisionFor(risk: RiskAssessment): FinalDecision =
+  private def finalDecisionFor(event: EnrichedPaymentEvent, risk: RiskAssessment): FinalDecision =
     risk.decision match
-      case RiskDecision.Approve      => FinalDecision.Accepted
+      case RiskDecision.Approve =>
+        if event.event.status == EventStatus.Failed then FinalDecision.Declined
+        else FinalDecision.Accepted
       case RiskDecision.Review       => FinalDecision.Review
       case RiskDecision.Block        => FinalDecision.BlockedByRisk
       case RiskDecision.NotEvaluated =>

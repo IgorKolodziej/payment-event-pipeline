@@ -86,6 +86,21 @@ class PaymentDecisionEngineTest extends FunSuite:
     assertEquals(assessment.finalDecision, FinalDecision.Accepted)
   }
 
+  test("evaluate declines failed event when eligibility passes and risk approves") {
+    val normalizedEvent = event.copy(status = EventStatus.Failed)
+
+    val assessment =
+      PaymentDecisionEngine.evaluate(
+        enrichedWith(normalizedEvent),
+        context,
+        RiskPolicy.default
+      )
+
+    assertEquals(assessment.eligibility.decision, EligibilityDecision.Eligible)
+    assertEquals(assessment.risk.map(_.decision), Some(RiskDecision.Approve))
+    assertEquals(assessment.finalDecision, FinalDecision.Declined)
+  }
+
   test("evaluate declines and skips risk when eligibility fails") {
     val normalizedEvent = event.copy(amount = BigDecimal("6000.00"))
     val profile = customer.copy(balance = BigDecimal("5500.00"), dailyLimit = BigDecimal("7000.00"))

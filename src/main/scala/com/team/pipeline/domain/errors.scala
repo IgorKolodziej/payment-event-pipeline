@@ -9,6 +9,8 @@ sealed trait EnrichmentError extends DataError
 final case class InvalidJson(message: String) extends ParseError
 final case class MissingField(field: String) extends ParseError
 
+final case class InvalidEventId(value: Int) extends ValidationError
+final case class InvalidCustomerId(value: Int) extends ValidationError
 final case class InvalidTimestamp(value: String) extends ValidationError
 final case class InvalidAmount(value: BigDecimal) extends ValidationError
 final case class InvalidCurrency(value: String) extends ValidationError
