@@ -53,14 +53,6 @@ The core pipeline depends on small ports, not concrete infrastructure. File repl
 
 The repository has a working end-to-end local pipeline. Docker Compose starts PostgreSQL, MongoDB, and Redpanda; seed/sample data are included; CI runs formatting checks and the unit test suite.
 
-## Team
-
-- Igor Kołodziej
-- Hubert Kowalski
-- Kacper Wadas
-- Oliwia Strzechowska
-- Roksana Rogalska
-
 ## Local Setup
 
 Requirements:
@@ -304,6 +296,14 @@ payment-event-pipeline/
 - Run tests before opening a PR.
 - Do not commit secrets or generated output files.
 - Keep code changes small, tested, and aligned with the agreed project scope.
+
+## Team
+
+- Igor Kołodziej
+- Hubert Kowalski
+- Kacper Wadas
+- Oliwia Strzechowska
+- Roksana Rogalska
 
 ## License
 
