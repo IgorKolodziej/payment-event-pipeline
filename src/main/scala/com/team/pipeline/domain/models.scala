@@ -1,5 +1,7 @@
 package com.team.pipeline.domain
 
+import cats.data.NonEmptyChain
+
 import java.time.Instant
 
 final case class RawPaymentEvent(
@@ -113,5 +115,5 @@ final case class RejectedEvent(
     sourcePosition: Long,
     eventId: Option[Int],
     customerId: Option[Int],
-    reason: DataError
+    reasons: NonEmptyChain[DataError]
 )

@@ -7,6 +7,7 @@ import com.team.pipeline.domain.RawPaymentEvent
 import io.circe.CursorOp.DownField
 import io.circe.Decoder
 import io.circe.DecodingFailure
+import io.circe.DecodingFailure.Reason
 import io.circe.Error
 import io.circe.ParsingFailure
 import io.circe.parser.decode
@@ -39,8 +40,8 @@ object EventParser:
         missingField(decodingFailure).getOrElse(InvalidJson(decodingFailure.message))
 
   private def missingField(error: DecodingFailure): Option[MissingField] =
-    error.message match
-      case message if message.startsWith("Missing required field") =>
+    error.reason match
+      case Reason.MissingField =>
         error.history.collectFirst { case DownField(field) =>
           MissingField(field)
         }

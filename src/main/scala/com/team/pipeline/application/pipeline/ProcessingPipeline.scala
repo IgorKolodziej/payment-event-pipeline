@@ -1,5 +1,6 @@
 package com.team.pipeline.application.pipeline
 
+import cats.data.NonEmptyChain
 import cats.effect.IO
 import com.team.pipeline.application.decision.PaymentDecisionEngine
 import com.team.pipeline.application.enrichment.EventEnricher
@@ -63,7 +64,7 @@ object ProcessingPipeline:
             IO.pure(RecordOutcome.Rejected(EventValidator.toRejected(
               record.sourcePosition,
               raw,
-              errors.head
+              errors.map(identity[DataError])
             )))
 
           case Right(normalized) =>
@@ -108,7 +109,7 @@ object ProcessingPipeline:
         sourcePosition = sourcePosition,
         eventId = eventId,
         customerId = customerId,
-        reason = reason
+        reasons = NonEmptyChain.one(reason)
       )
     )
 
@@ -117,7 +118,7 @@ object ProcessingPipeline:
 
     outcome match
       case RecordOutcome.Rejected(rejected) =>
-        afterRead.onRejected(rejected.reason)
+        afterRead.onRejected(rejected.reasons)
 
       case RecordOutcome.Processed(processed, assessment) =>
         afterRead

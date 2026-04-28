@@ -14,6 +14,7 @@ import com.team.pipeline.domain.EligibilityViolation
 import com.team.pipeline.domain.EligibilityViolationType
 import com.team.pipeline.domain.EnrichedPaymentEvent
 import com.team.pipeline.domain.FinalDecision
+import com.team.pipeline.domain.InvalidJson
 import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.domain.ProcessedEvent
 import com.team.pipeline.domain.RiskDecision
@@ -65,6 +66,10 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       outcomes.head match
         case ProcessingPipeline.RecordOutcome.Rejected(rejected) =>
           assertEquals(rejected.sourcePosition, 7L)
+          assert(rejected.reasons.toNonEmptyList.toList.exists {
+            case InvalidJson(_) => true
+            case _              => false
+          })
         case other =>
           fail(s"Expected rejected outcome, got $other")
   }
@@ -83,6 +88,34 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       assertEquals(summary.totalProcessed, 0)
       assertEquals(summary.totalRejected, 1)
       assertEquals(summary.errorCounts, Map("InvalidAmount" -> 1))
+      assertEquals(lookupCalls, Vector.empty)
+      assertEquals(savedProcessed, Vector.empty)
+  }
+
+  test("run stores all validation errors in rejected summary counts") {
+    for
+      fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
+      summary <- ProcessingPipeline.run(
+        Stream.emit(EventSource.InputRecord(
+          1,
+          validLine(amount = "0.00", currency = "XYZ", status = "UNKNOWN")
+        )),
+        fixture.dependencies
+      )
+      lookupCalls <- fixture.lookupCalls.get
+      savedProcessed <- fixture.savedProcessed.get
+    yield
+      assertEquals(summary.totalRead, 1)
+      assertEquals(summary.totalRejected, 1)
+      assertEquals(summary.totalProcessed, 0)
+      assertEquals(
+        summary.errorCounts,
+        Map(
+          "InvalidAmount" -> 1,
+          "InvalidCurrency" -> 1,
+          "InvalidStatus" -> 1
+        )
+      )
       assertEquals(lookupCalls, Vector.empty)
       assertEquals(savedProcessed, Vector.empty)
   }

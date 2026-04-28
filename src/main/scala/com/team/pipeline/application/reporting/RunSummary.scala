@@ -1,5 +1,6 @@
 package com.team.pipeline.application.reporting
 
+import cats.data.NonEmptyChain
 import com.team.pipeline.domain.Alert
 import com.team.pipeline.domain.AlertType
 import com.team.pipeline.domain.DataError
@@ -53,10 +54,17 @@ extension (summary: RunSummary)
     summary.copy(totalRead = summary.totalRead + 1)
 
   def onRejected(reason: DataError): RunSummary =
-    val key = RunSummary.errorKey(reason)
+    summary.onRejected(NonEmptyChain.one(reason))
+
+  def onRejected(reasons: NonEmptyChain[DataError]): RunSummary =
+    val errorCounts =
+      reasons.toNonEmptyList.toList.foldLeft(summary.errorCounts) { (counts, reason) =>
+        RunSummary.increment(counts, RunSummary.errorKey(reason))
+      }
+
     summary.copy(
       totalRejected = summary.totalRejected + 1,
-      errorCounts = RunSummary.increment(summary.errorCounts, key)
+      errorCounts = errorCounts
     )
 
   def onProcessed(transactionCountry: String): RunSummary =
