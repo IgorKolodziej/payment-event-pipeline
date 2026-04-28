@@ -18,7 +18,7 @@ final class MongoEligibilityViolationStore(collection: MongoCollection[Document]
     violations.traverse_ { violation =>
       val filter = Filters.and(
         Filters.eq("eventId", violation.eventId),
-        Filters.eq("violationType", violation.violationType.toString)
+        Filters.eq("violationType", violation.violationType.code)
       )
       val doc = MongoDocumentMapping.EligibilityViolationDoc.toDocument(violation)
 

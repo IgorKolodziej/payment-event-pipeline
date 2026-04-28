@@ -18,7 +18,7 @@ final class MongoAlertStore(collection: MongoCollection[Document])
     alerts.traverse_ { alert =>
       val filter = Filters.and(
         Filters.eq("eventId", alert.eventId),
-        Filters.eq("alertType", alert.alertType.toString)
+        Filters.eq("alertType", alert.alertType.code)
       )
       val doc = MongoDocumentMapping.AlertDoc.toDocument(alert)
 
