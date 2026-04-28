@@ -14,6 +14,7 @@ import com.team.pipeline.infrastructure.file.FileReplayEventSource
 import com.team.pipeline.infrastructure.file.PacedFileReplayEventSource
 import com.team.pipeline.infrastructure.mongo.MongoAlertStore
 import com.team.pipeline.infrastructure.mongo.MongoEligibilityViolationStore
+import com.team.pipeline.infrastructure.mongo.MongoIndexInitializer
 import com.team.pipeline.infrastructure.mongo.MongoProcessedEventStore
 import com.team.pipeline.infrastructure.mongo.MongoRiskFeatureProvider
 import com.team.pipeline.infrastructure.postgres.DoobieCustomerProfileLookup
@@ -72,20 +73,22 @@ object Main extends IOApp.Simple:
       .make(IO.blocking(MongoClients.create(mongoUrl(config))))(client =>
         IO.blocking(client.close())
       )
-      .map { mongoClient =>
+      .evalMap { mongoClient =>
         val database = mongoClient.getDatabase(config.mongo.database)
         val processedCollection = database.getCollection(config.mongo.processedCollection)
         val alertsCollection = database.getCollection(config.mongo.alertsCollection)
         val violationsCollection = database.getCollection(config.mongo.violationsCollection)
 
-        ProcessingPipeline.Dependencies(
-          customerLookup = DoobieCustomerProfileLookup(transactor),
-          riskFeatureProvider = MongoRiskFeatureProvider(processedCollection, riskPolicy),
-          processedEventStore = MongoProcessedEventStore(processedCollection),
-          eligibilityViolationStore = MongoEligibilityViolationStore(violationsCollection),
-          alertStore = MongoAlertStore(alertsCollection),
-          emailHasher = EmailHasher.sha256(config.app.emailSalt),
-          riskPolicy = riskPolicy
+        MongoIndexInitializer.initialize(database, config.mongo).as(
+          ProcessingPipeline.Dependencies(
+            customerLookup = DoobieCustomerProfileLookup(transactor),
+            riskFeatureProvider = MongoRiskFeatureProvider(processedCollection, riskPolicy),
+            processedEventStore = MongoProcessedEventStore(processedCollection),
+            eligibilityViolationStore = MongoEligibilityViolationStore(violationsCollection),
+            alertStore = MongoAlertStore(alertsCollection),
+            emailHasher = EmailHasher.sha256(config.app.emailSalt),
+            riskPolicy = riskPolicy
+          )
         )
       }
 
