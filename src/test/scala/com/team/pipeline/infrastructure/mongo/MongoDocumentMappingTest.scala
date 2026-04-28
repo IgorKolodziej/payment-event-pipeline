@@ -1,5 +1,7 @@
 package com.team.pipeline.infrastructure.mongo
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.Alert
 import com.team.pipeline.domain.AlertType
 import com.team.pipeline.domain.Currency
@@ -21,8 +23,8 @@ class MongoDocumentMappingTest extends FunSuite:
 
   test("ProcessedEventDoc.toDocument maps processed event fields") {
     val processed = ProcessedEvent(
-      eventId = 1,
-      customerId = 10,
+      eventId = EventId(1),
+      customerId = CustomerId(10),
       timestamp = Instant.parse("2026-04-24T10:00:00Z"),
       amount = BigDecimal("150.00"),
       currency = Currency.PLN,
@@ -62,8 +64,8 @@ class MongoDocumentMappingTest extends FunSuite:
 
   test("ProcessedEventDoc.toDocument maps not-evaluated risk decision") {
     val processed = ProcessedEvent(
-      eventId = 2,
-      customerId = 10,
+      eventId = EventId(2),
+      customerId = CustomerId(10),
       timestamp = Instant.parse("2026-04-24T10:00:00Z"),
       amount = BigDecimal("150.00"),
       currency = Currency.PLN,
@@ -91,8 +93,8 @@ class MongoDocumentMappingTest extends FunSuite:
   test("EligibilityViolationDoc.toDocument maps stable violation key fields") {
     val violation = EligibilityViolation(
       violationType = EligibilityViolationType.InactiveCustomer,
-      eventId = 99,
-      customerId = 10,
+      eventId = EventId(99),
+      customerId = CustomerId(10),
       message = "inactive"
     )
 
@@ -107,8 +109,8 @@ class MongoDocumentMappingTest extends FunSuite:
   test("AlertDoc.toDocument maps stable alert key fields") {
     val alert = Alert(
       alertType = AlertType.VelocitySpike,
-      eventId = 42,
-      customerId = 10,
+      eventId = EventId(42),
+      customerId = CustomerId(10),
       message = "velocity",
       riskScore = 30
     )

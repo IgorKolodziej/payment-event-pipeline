@@ -1,5 +1,7 @@
 package com.team.pipeline.application.parsing
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.InvalidJson
 import com.team.pipeline.domain.MissingField
 import com.team.pipeline.domain.RawPaymentEvent
@@ -14,9 +16,9 @@ class EventParserTest extends FunSuite:
       EventParser.parseLine(line),
       Right(
         RawPaymentEvent(
-          eventId = 1,
+          eventId = EventId(1),
           timestamp = "2026-04-24T10:00:00Z",
-          customerId = 1,
+          customerId = CustomerId(1),
           amount = BigDecimal("150.00"),
           currency = "PLN",
           status = "SUCCESS",

@@ -6,7 +6,10 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
 import com.team.pipeline.application.risk.CustomerRiskContext
 import com.team.pipeline.application.risk.RiskPolicy
+import com.team.pipeline.domain.CustomerId.*
 import com.team.pipeline.domain.EnrichedPaymentEvent
+import com.team.pipeline.domain.EventId
+import com.team.pipeline.domain.EventId.*
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentMethod
@@ -29,10 +32,10 @@ final class MongoRiskFeatureProvider(
     val from30d = now.minus(Duration.ofDays(30))
 
     val filter = Filters.and(
-      Filters.eq("customerId", customerId),
+      Filters.eq("customerId", customerId.value),
       Filters.gte("timestamp", Date.from(from30d)),
       Filters.lt("timestamp", Date.from(now)),
-      Filters.ne("eventId", event.event.eventId)
+      Filters.ne("eventId", event.event.eventId.value)
     )
 
     val projection = Projections.include(
@@ -65,7 +68,7 @@ final class MongoRiskFeatureProvider(
     }
 
   private def toHistoryEvent(doc: Document): HistoryEvent =
-    val eventId = doc.getInteger("eventId").intValue()
+    val eventId = EventId(doc.getInteger("eventId").intValue())
     val timestamp = doc.getDate("timestamp").toInstant
     val amount = BigDecimal(doc.getString("amount"))
     val status = parseStored("status", doc.getString("status"))(EventStatus.fromCode)

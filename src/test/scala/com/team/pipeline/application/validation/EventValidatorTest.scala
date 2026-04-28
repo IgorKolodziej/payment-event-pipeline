@@ -1,5 +1,7 @@
 package com.team.pipeline.application.validation
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import cats.data.NonEmptyChain
 import cats.data.Validated.Invalid
 import cats.data.Validated.Valid
@@ -23,9 +25,9 @@ import java.time.Instant
 
 class EventValidatorTest extends FunSuite:
   private val validRaw = RawPaymentEvent(
-    eventId = 1,
+    eventId = EventId(1),
     timestamp = "2026-04-24T10:00:00Z",
-    customerId = 10,
+    customerId = CustomerId(10),
     amount = BigDecimal("150.00"),
     currency = "PLN",
     status = "SUCCESS",
@@ -42,9 +44,9 @@ class EventValidatorTest extends FunSuite:
 
     result match
       case Valid(event) =>
-        assertEquals(event.eventId, 1)
+        assertEquals(event.eventId, EventId(1))
         assertEquals(event.timestamp, Instant.parse("2026-04-24T10:00:00Z"))
-        assertEquals(event.customerId, 10)
+        assertEquals(event.customerId, CustomerId(10))
         assertEquals(event.amount, BigDecimal("150.00"))
         assertEquals(event.currency, Currency.PLN)
         assertEquals(event.status, EventStatus.Success)
@@ -133,8 +135,8 @@ class EventValidatorTest extends FunSuite:
     )
 
     assertEquals(rejected.sourcePosition, 42L)
-    assertEquals(rejected.eventId, Some(1))
-    assertEquals(rejected.customerId, Some(10))
+    assertEquals(rejected.eventId, Some(EventId(1)))
+    assertEquals(rejected.customerId, Some(CustomerId(10)))
     assertEquals(
       rejected.reasons,
       NonEmptyChain.one(InvalidAmount(BigDecimal("-100.00")))

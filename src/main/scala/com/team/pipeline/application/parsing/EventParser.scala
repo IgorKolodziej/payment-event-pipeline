@@ -1,5 +1,7 @@
 package com.team.pipeline.application.parsing
 
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.InvalidJson
 import com.team.pipeline.domain.MissingField
 import com.team.pipeline.domain.ParseError
@@ -14,20 +16,35 @@ import io.circe.parser.decode
 
 object EventParser:
   given Decoder[RawPaymentEvent] =
-    Decoder.forProduct12(
-      "eventId",
-      "timestamp",
-      "customerId",
-      "amount",
-      "currency",
-      "status",
-      "paymentMethod",
-      "transactionCountry",
-      "merchantId",
-      "merchantCategory",
-      "channel",
-      "deviceId"
-    )(RawPaymentEvent.apply)
+    Decoder.instance { cursor =>
+      for
+        eventId <- cursor.downField("eventId").as[Int]
+        timestamp <- cursor.downField("timestamp").as[String]
+        customerId <- cursor.downField("customerId").as[Int]
+        amount <- cursor.downField("amount").as[BigDecimal]
+        currency <- cursor.downField("currency").as[String]
+        status <- cursor.downField("status").as[String]
+        paymentMethod <- cursor.downField("paymentMethod").as[String]
+        transactionCountry <- cursor.downField("transactionCountry").as[String]
+        merchantId <- cursor.downField("merchantId").as[String]
+        merchantCategory <- cursor.downField("merchantCategory").as[String]
+        channel <- cursor.downField("channel").as[String]
+        deviceId <- cursor.downField("deviceId").as[String]
+      yield RawPaymentEvent(
+        eventId = EventId(eventId),
+        timestamp = timestamp,
+        customerId = CustomerId(customerId),
+        amount = amount,
+        currency = currency,
+        status = status,
+        paymentMethod = paymentMethod,
+        transactionCountry = transactionCountry,
+        merchantId = merchantId,
+        merchantCategory = merchantCategory,
+        channel = channel,
+        deviceId = deviceId
+      )
+    }
 
   def parseLine(line: String): Either[ParseError, RawPaymentEvent] =
     decode[RawPaymentEvent](line).left.map(toParseError)

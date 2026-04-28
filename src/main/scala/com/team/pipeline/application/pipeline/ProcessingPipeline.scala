@@ -10,8 +10,10 @@ import com.team.pipeline.application.reporting.*
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.application.validation.EventValidator
+import com.team.pipeline.domain.CustomerId
 import com.team.pipeline.domain.DataError
 import com.team.pipeline.domain.EnrichedPaymentEvent
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.PaymentAssessment
 import com.team.pipeline.domain.ProcessedEvent
 import com.team.pipeline.domain.RejectedEvent
@@ -100,8 +102,8 @@ object ProcessingPipeline:
 
   private def rejected(
       sourcePosition: Long,
-      eventId: Option[Int],
-      customerId: Option[Int],
+      eventId: Option[EventId],
+      customerId: Option[CustomerId],
       reason: DataError
   ): RecordOutcome =
     RecordOutcome.Rejected(

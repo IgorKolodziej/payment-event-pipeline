@@ -2,6 +2,8 @@ package com.team.pipeline.infrastructure.postgres
 
 import cats.effect.IO
 import com.team.pipeline.domain.Currency
+import com.team.pipeline.domain.CustomerId
+import com.team.pipeline.domain.CustomerId.*
 import com.team.pipeline.domain.CustomerProfile
 import com.team.pipeline.domain.PaymentMethod
 import com.team.pipeline.ports.CustomerProfileLookup
@@ -18,7 +20,9 @@ final class DoobieCustomerProfileLookup(transactor: Transactor[IO])
   import DoobieCustomerProfileLookup.CustomerRow
   import DoobieCustomerProfileLookup.given
 
-  override def find(customerId: Int): IO[Option[CustomerProfile]] =
+  override def find(customerId: CustomerId): IO[Option[CustomerProfile]] =
+    val rawCustomerId = customerId.value
+
     sql"""
       SELECT
         id,
@@ -39,7 +43,7 @@ final class DoobieCustomerProfileLookup(transactor: Transactor[IO])
         fraud_before,
         created_at
       FROM customers
-      WHERE id = $customerId
+      WHERE id = $rawCustomerId
     """
       .query[CustomerRow]
       .option
@@ -88,7 +92,7 @@ object DoobieCustomerProfileLookup:
   ):
     def toDomain: CustomerProfile =
       CustomerProfile(
-        customerId = id,
+        customerId = CustomerId(id),
         firstName = firstName,
         lastName = lastName,
         email = email,
