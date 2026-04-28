@@ -17,14 +17,14 @@ class RedpandaEventSourceTest extends FunSuite:
     assertEquals(properties(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG), "false")
   }
 
-  test("maps consumed values to monotonic generic input lines") {
+  test("maps consumed values to monotonic generic source positions") {
     assertEquals(
-      RedpandaEventSource.inputLine("""{"eventId":100}""", index = 0L),
-      EventSource.InputLine(lineNumber = 1, value = """{"eventId":100}""")
+      RedpandaEventSource.inputRecord("""{"eventId":100}""", index = 0L),
+      EventSource.InputRecord(sourcePosition = 1, value = """{"eventId":100}""")
     )
     assertEquals(
-      RedpandaEventSource.inputLine("""{"eventId":101}""", index = 41L),
-      EventSource.InputLine(lineNumber = 42, value = """{"eventId":101}""")
+      RedpandaEventSource.inputRecord("""{"eventId":101}""", index = 41L),
+      EventSource.InputRecord(sourcePosition = 42, value = """{"eventId":101}""")
     )
   }
 

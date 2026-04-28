@@ -110,7 +110,7 @@ final case class Alert(
 )
 
 final case class RejectedEvent(
-    lineNumber: Long,
+    sourcePosition: Long,
     eventId: Option[Int],
     customerId: Option[Int],
     reason: DataError

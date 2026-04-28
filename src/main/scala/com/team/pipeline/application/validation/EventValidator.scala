@@ -50,12 +50,12 @@ object EventValidator:
     }
 
   def toRejected(
-      lineNumber: Long,
+      sourcePosition: Long,
       raw: RawPaymentEvent,
       reason: DataError
   ): RejectedEvent =
     RejectedEvent(
-      lineNumber = lineNumber,
+      sourcePosition = sourcePosition,
       eventId = Some(raw.eventId),
       customerId = Some(raw.customerId),
       reason = reason

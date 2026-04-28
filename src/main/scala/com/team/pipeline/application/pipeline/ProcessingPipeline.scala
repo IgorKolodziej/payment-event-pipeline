@@ -33,35 +33,35 @@ object ProcessingPipeline:
       riskPolicy: RiskPolicy
   )
 
-  enum LineOutcome:
+  enum RecordOutcome:
     case Rejected(rejected: RejectedEvent)
     case Processed(processed: ProcessedEvent, assessment: PaymentAssessment)
 
   def process(
-      lines: Stream[IO, EventSource.InputLine],
+      records: Stream[IO, EventSource.InputRecord],
       dependencies: Dependencies
-  ): Stream[IO, LineOutcome] =
-    lines.evalMap(processLine(_, dependencies))
+  ): Stream[IO, RecordOutcome] =
+    records.evalMap(processRecord(_, dependencies))
 
   def run(
-      lines: Stream[IO, EventSource.InputLine],
+      records: Stream[IO, EventSource.InputRecord],
       dependencies: Dependencies
   ): IO[RunSummary] =
-    process(lines, dependencies).compile.fold(RunSummary.empty)(updateSummary)
+    process(records, dependencies).compile.fold(RunSummary.empty)(updateSummary)
 
-  private[pipeline] def processLine(
-      line: EventSource.InputLine,
+  private[pipeline] def processRecord(
+      record: EventSource.InputRecord,
       dependencies: Dependencies
-  ): IO[LineOutcome] =
-    EventParser.parseLine(line.value) match
+  ): IO[RecordOutcome] =
+    EventParser.parseLine(record.value) match
       case Left(error) =>
-        IO.pure(rejected(line.lineNumber, eventId = None, customerId = None, error))
+        IO.pure(rejected(record.sourcePosition, eventId = None, customerId = None, error))
 
       case Right(raw) =>
         EventValidator.validateAndNormalize(raw).toEither match
           case Left(errors) =>
-            IO.pure(LineOutcome.Rejected(EventValidator.toRejected(
-              line.lineNumber,
+            IO.pure(RecordOutcome.Rejected(EventValidator.toRejected(
+              record.sourcePosition,
               raw,
               errors.head
             )))
@@ -72,7 +72,7 @@ object ProcessingPipeline:
                 case Left(error) =>
                   IO.pure(
                     rejected(
-                      line.lineNumber,
+                      record.sourcePosition,
                       eventId = Some(normalized.eventId),
                       customerId = Some(normalized.customerId),
                       error
@@ -86,7 +86,7 @@ object ProcessingPipeline:
   private def processEnriched(
       event: EnrichedPaymentEvent,
       dependencies: Dependencies
-  ): IO[LineOutcome] =
+  ): IO[RecordOutcome] =
     for
       context <- dependencies.riskFeatureProvider.contextFor(event)
       assessment = PaymentDecisionEngine.evaluate(event, context, dependencies.riskPolicy)
@@ -95,31 +95,31 @@ object ProcessingPipeline:
       _ <- dependencies.processedEventStore.save(processed)
       _ <- dependencies.eligibilityViolationStore.saveAll(assessment.eligibility.violations)
       _ <- dependencies.alertStore.saveAll(alerts)
-    yield LineOutcome.Processed(processed, assessment)
+    yield RecordOutcome.Processed(processed, assessment)
 
   private def rejected(
-      lineNumber: Long,
+      sourcePosition: Long,
       eventId: Option[Int],
       customerId: Option[Int],
       reason: DataError
-  ): LineOutcome =
-    LineOutcome.Rejected(
+  ): RecordOutcome =
+    RecordOutcome.Rejected(
       RejectedEvent(
-        lineNumber = lineNumber,
+        sourcePosition = sourcePosition,
         eventId = eventId,
         customerId = customerId,
         reason = reason
       )
     )
 
-  private def updateSummary(summary: RunSummary, outcome: LineOutcome): RunSummary =
+  private def updateSummary(summary: RunSummary, outcome: RecordOutcome): RunSummary =
     val afterRead = summary.onLineRead
 
     outcome match
-      case LineOutcome.Rejected(rejected) =>
+      case RecordOutcome.Rejected(rejected) =>
         afterRead.onRejected(rejected.reason)
 
-      case LineOutcome.Processed(processed, assessment) =>
+      case RecordOutcome.Processed(processed, assessment) =>
         afterRead
           .onProcessed(processed.transactionCountry)
           .onDecision(assessment.finalDecision)

@@ -33,7 +33,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
     for
       fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
       summary <- ProcessingPipeline.run(
-        Stream.emit(EventSource.InputLine(1, "not-json")),
+        Stream.emit(EventSource.InputRecord(1, "not-json")),
         fixture.dependencies
       )
       lookupCalls <- fixture.lookupCalls.get
@@ -53,11 +53,27 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       assertEquals(savedAlerts, Vector.empty)
   }
 
+  test("process preserves source position on rejected records") {
+    for
+      fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
+      outcomes <- ProcessingPipeline.process(
+        Stream.emit(EventSource.InputRecord(7, "not-json")),
+        fixture.dependencies
+      ).compile.toList
+    yield
+      assertEquals(outcomes.size, 1)
+      outcomes.head match
+        case ProcessingPipeline.RecordOutcome.Rejected(rejected) =>
+          assertEquals(rejected.sourcePosition, 7L)
+        case other =>
+          fail(s"Expected rejected outcome, got $other")
+  }
+
   test("run rejects validation failures before customer lookup") {
     for
       fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
       summary <- ProcessingPipeline.run(
-        Stream.emit(EventSource.InputLine(1, validLine(amount = "0.00"))),
+        Stream.emit(EventSource.InputRecord(1, validLine(amount = "0.00"))),
         fixture.dependencies
       )
       lookupCalls <- fixture.lookupCalls.get
@@ -75,7 +91,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
     for
       fixture <- TestFixture.create(customers = Map.empty)
       summary <- ProcessingPipeline.run(
-        Stream.emit(EventSource.InputLine(7, validLine(customerId = 999))),
+        Stream.emit(EventSource.InputRecord(7, validLine(customerId = 999))),
         fixture.dependencies
       )
       lookupCalls <- fixture.lookupCalls.get
@@ -99,7 +115,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
     for
       fixture <- TestFixture.create(customers = Map(flaggedCustomer.customerId -> flaggedCustomer))
       summary <- ProcessingPipeline.run(
-        Stream.emit(EventSource.InputLine(1, validLine())),
+        Stream.emit(EventSource.InputRecord(1, validLine())),
         fixture.dependencies
       )
       lookupCalls <- fixture.lookupCalls.get
@@ -134,7 +150,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
       fixture <-
         TestFixture.create(customers = Map(inactiveCustomer.customerId -> inactiveCustomer))
       summary <- ProcessingPipeline.run(
-        Stream.emit(EventSource.InputLine(1, validLine())),
+        Stream.emit(EventSource.InputRecord(1, validLine())),
         fixture.dependencies
       )
       contextCalls <- fixture.contextCalls.get
@@ -165,7 +181,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
     for
       fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
       summary <- ProcessingPipeline.run(
-        Stream.emit(EventSource.InputLine(1, validLine(currency = "EUR"))),
+        Stream.emit(EventSource.InputRecord(1, validLine(currency = "EUR"))),
         fixture.dependencies
       )
       savedProcessed <- fixture.savedProcessed.get

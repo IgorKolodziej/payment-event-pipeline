@@ -9,7 +9,7 @@ import fs2.kafka.ConsumerSettings
 import fs2.kafka.KafkaConsumer
 
 final class RedpandaEventSource(config: KafkaConfig) extends EventSource:
-  override def events: Stream[IO, EventSource.InputLine] =
+  override def events: Stream[IO, EventSource.InputRecord] =
     KafkaConsumer
       .stream(RedpandaEventSource.consumerSettings(config))
       .subscribeTo(config.topic)
@@ -17,7 +17,7 @@ final class RedpandaEventSource(config: KafkaConfig) extends EventSource:
       .map(_.record.value)
       .zipWithIndex
       .map { case (value, index) =>
-        RedpandaEventSource.inputLine(value, index)
+        RedpandaEventSource.inputRecord(value, index)
       }
 
 object RedpandaEventSource:
@@ -31,8 +31,8 @@ object RedpandaEventSource:
       .withAutoOffsetReset(AutoOffsetReset.Earliest)
       .withEnableAutoCommit(false)
 
-  private[redpanda] def inputLine(value: String, index: Long): EventSource.InputLine =
-    EventSource.InputLine(
-      lineNumber = index + 1,
+  private[redpanda] def inputRecord(value: String, index: Long): EventSource.InputRecord =
+    EventSource.InputRecord(
+      sourcePosition = index + 1,
       value = value
     )
