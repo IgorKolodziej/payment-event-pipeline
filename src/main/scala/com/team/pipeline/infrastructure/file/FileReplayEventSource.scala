@@ -7,5 +7,5 @@ import fs2.Stream
 import java.nio.file.Path
 
 final class FileReplayEventSource(path: Path) extends EventSource:
-  override def events: Stream[IO, EventSource.InputLine] =
+  override def events: Stream[IO, EventSource.InputRecord] =
     JsonlInput.read(path)

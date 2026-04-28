@@ -19,7 +19,7 @@ class EventSourceTest extends CatsEffectSuite:
     }
   }
 
-  test("paced file replay source preserves record order and line numbers") {
+  test("paced file replay source preserves record order and source positions") {
     tempFile.use { path =>
       for
         _ <- IO.blocking(Files.writeString(path, input))
@@ -36,9 +36,9 @@ class EventSourceTest extends CatsEffectSuite:
 
   private val expectedLines =
     List(
-      EventSource.InputLine(1, """{"eventId":1}"""),
-      EventSource.InputLine(2, ""),
-      EventSource.InputLine(3, """{"eventId":2}""")
+      EventSource.InputRecord(1, """{"eventId":1}"""),
+      EventSource.InputRecord(2, ""),
+      EventSource.InputRecord(3, """{"eventId":2}""")
     )
 
   private def tempFile: Resource[IO, Path] =

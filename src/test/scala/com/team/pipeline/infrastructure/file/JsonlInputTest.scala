@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 class JsonlInputTest extends CatsEffectSuite:
-  test("read streams JSONL lines with one-based line numbers") {
+  test("read streams JSONL records with one-based physical source positions") {
     val input =
       """{"eventId":1}
         |{"eventId":2}
@@ -23,9 +23,9 @@ class JsonlInputTest extends CatsEffectSuite:
       yield assertEquals(
         lines,
         List(
-          EventSource.InputLine(1, """{"eventId":1}"""),
-          EventSource.InputLine(2, """{"eventId":2}"""),
-          EventSource.InputLine(3, """{"eventId":3}""")
+          EventSource.InputRecord(1, """{"eventId":1}"""),
+          EventSource.InputRecord(2, """{"eventId":2}"""),
+          EventSource.InputRecord(3, """{"eventId":3}""")
         )
       )
     }
@@ -45,9 +45,9 @@ class JsonlInputTest extends CatsEffectSuite:
       yield assertEquals(
         lines,
         List(
-          EventSource.InputLine(1, """{"eventId":1}"""),
-          EventSource.InputLine(2, ""),
-          EventSource.InputLine(3, """{"eventId":2}""")
+          EventSource.InputRecord(1, """{"eventId":1}"""),
+          EventSource.InputRecord(2, ""),
+          EventSource.InputRecord(3, """{"eventId":2}""")
         )
       )
     }

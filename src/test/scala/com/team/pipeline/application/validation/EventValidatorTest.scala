@@ -127,12 +127,12 @@ class EventValidatorTest extends FunSuite:
 
   test("maps validation failure to rejected event") {
     val rejected = EventValidator.toRejected(
-      lineNumber = 42,
+      sourcePosition = 42,
       raw = validRaw,
       reason = InvalidAmount(BigDecimal("-100.00"))
     )
 
-    assertEquals(rejected.lineNumber, 42L)
+    assertEquals(rejected.sourcePosition, 42L)
     assertEquals(rejected.eventId, Some(1))
     assertEquals(rejected.customerId, Some(10))
     assertEquals(rejected.reason, InvalidAmount(BigDecimal("-100.00")))

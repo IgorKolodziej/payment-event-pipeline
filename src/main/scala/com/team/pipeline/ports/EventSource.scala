@@ -4,7 +4,7 @@ import cats.effect.IO
 import fs2.Stream
 
 object EventSource:
-  final case class InputLine(lineNumber: Long, value: String)
+  final case class InputRecord(sourcePosition: Long, value: String)
 
 trait EventSource:
-  def events: Stream[IO, EventSource.InputLine]
+  def events: Stream[IO, EventSource.InputRecord]
