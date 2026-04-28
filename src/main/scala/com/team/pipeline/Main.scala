@@ -20,7 +20,7 @@ import com.team.pipeline.infrastructure.mongo.MongoRiskFeatureProvider
 import com.team.pipeline.infrastructure.postgres.DoobieCustomerProfileLookup
 import com.team.pipeline.infrastructure.redpanda.RedpandaEventSource
 import com.team.pipeline.ports.EventSource
-import doobie.Transactor
+import doobie.hikari.{Config as HikariConfig, HikariTransactor}
 
 import java.nio.file.Files
 
@@ -61,19 +61,16 @@ object Main extends IOApp.Simple:
       config: AppConfig
   ): Resource[IO, ProcessingPipeline.Dependencies] =
     val riskPolicy = RiskPolicy.default
-    val transactor = Transactor.fromDriverManager[IO](
-      driver = config.postgres.driver,
-      url = jdbcUrl(config),
-      user = config.postgres.user,
-      password = config.postgres.password,
-      logHandler = None
-    )
 
-    Resource
-      .make(IO.blocking(MongoClients.create(mongoUrl(config))))(client =>
+    for
+      transactor <- HikariTransactor.fromConfig[IO](
+        postgresHikariConfig(config),
+        logHandler = None
+      )
+      mongoClient <- Resource.make(IO.blocking(MongoClients.create(mongoUrl(config))))(client =>
         IO.blocking(client.close())
       )
-      .evalMap { mongoClient =>
+      dependencies <- Resource.eval {
         val database = mongoClient.getDatabase(config.mongo.database)
         val processedCollection = database.getCollection(config.mongo.processedCollection)
         val alertsCollection = database.getCollection(config.mongo.alertsCollection)
@@ -91,6 +88,18 @@ object Main extends IOApp.Simple:
           )
         )
       }
+    yield dependencies
+
+  private def postgresHikariConfig(config: AppConfig): HikariConfig =
+    HikariConfig(
+      jdbcUrl = jdbcUrl(config),
+      username = Some(config.postgres.user),
+      password = Some(config.postgres.password),
+      driverClassName = Some(config.postgres.driver),
+      maximumPoolSize = 4,
+      minimumIdle = 1,
+      poolName = Some("payment-event-pipeline-postgres")
+    )
 
   private def jdbcUrl(config: AppConfig): String =
     s"jdbc:postgresql://${config.postgres.host}:${config.postgres.port}/${config.postgres.database}"

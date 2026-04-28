@@ -111,5 +111,78 @@ class AppConfigTest extends FunSuite:
   }
 
   test("loads redpanda input mode") {
-    assertEquals(InputMode.fromString("redpanda"), InputMode.Redpanda)
+    assertEquals(InputMode.fromString("redpanda"), Right(InputMode.Redpanda))
   }
+
+  test("rejects unsupported input mode without throwing raw parser errors") {
+    assertEquals(
+      InputMode.fromString("broker"),
+      Left("Unsupported input mode: broker")
+    )
+  }
+
+  test("returns explicit error when EMAIL_SALT is missing") {
+    val config = ConfigFactory.parseString(validConfig(emailSaltLine = ""))
+
+    val error = AppConfig.fromConfigEither(config).left.toOption.get
+
+    assert(error.getMessage.contains("EMAIL_SALT is required"))
+  }
+
+  test("rejects negative stream delay") {
+    val config = ConfigFactory.parseString(validConfig(streamDelayMillis = -1))
+
+    val error = AppConfig.fromConfigEither(config).left.toOption.get
+
+    assert(error.getMessage.contains("app.streamDelayMillis must be non-negative"))
+  }
+
+  test("rejects out-of-range ports") {
+    val config = ConfigFactory.parseString(validConfig(postgresPort = 0, mongoPort = 70000))
+
+    val error = AppConfig.fromConfigEither(config).left.toOption.get
+
+    assert(error.getMessage.contains("postgres.port must be between 1 and 65535"))
+    assert(error.getMessage.contains("mongo.port must be between 1 and 65535"))
+  }
+
+  private def validConfig(
+      emailSaltLine: String = "emailSalt = \"test-salt\"",
+      streamDelayMillis: Long = 0,
+      postgresPort: Int = 5432,
+      mongoPort: Int = 27017
+  ): String =
+    s"""
+       |app {
+       |  inputFile = "sample-data/events.jsonl"
+       |  outputDir = "out"
+       |  $emailSaltLine
+       |  inputMode = "file"
+       |  streamDelayMillis = $streamDelayMillis
+       |}
+       |
+       |postgres {
+       |  host = "localhost"
+       |  port = $postgresPort
+       |  database = "payment_pipeline"
+       |  user = "pipeline_user"
+       |  password = "pipeline_pass_dev"
+       |  driver = "org.postgresql.Driver"
+       |}
+       |
+       |mongo {
+       |  host = "localhost"
+       |  port = $mongoPort
+       |  database = "payment_pipeline"
+       |  processedCollection = "processed_transactions"
+       |  alertsCollection = "alerts"
+       |  violationsCollection = "eligibility_violations"
+       |}
+       |
+       |kafka {
+       |  bootstrapServers = "localhost:19092"
+       |  topic = "payment-events"
+       |  groupId = "payment-event-pipeline"
+       |  clientId = "payment-event-pipeline-test"
+       |}
+       |""".stripMargin
