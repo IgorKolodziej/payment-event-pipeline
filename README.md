@@ -344,3 +344,53 @@ payment-event-pipeline/
 ## License
 
 Apache License 2.0.
+
+## Schemat Systemu
+```mermaid
+```
+
+## diagram architektury
+```mermaid
+```
+
+## Schemat Systemu
+```mermaid
+flowchart LR
+  subgraph Sources[Sources]
+    file[File_sample_data]
+    redpanda[Redpanda_stream]
+  end
+
+  file --> ES[EventSource]
+  redpanda --> ES
+
+  ES --> Parser[EventParser]
+  Parser --> Validator[EventValidator / EventNormalizer]
+  Validator --> Enricher[EventEnricher]
+  Enricher --> Pipeline[ProcessingPipeline]
+
+  Pipeline --> Eligibility[EligibilityChecker]
+  Pipeline --> Risk[RiskEngine]
+  Pipeline --> Decision[PaymentDecisionEngine]
+
+  Eligibility -->|violations| EligibilityStore[EligibilityViolationStore_Postgres_Mongo]
+  Risk -->|alerts| AlertStore[AlertStore_Mongo]
+  Decision --> ProcessedStore[ProcessedEventStore_Postgres]
+
+  ProcessedStore --> Reporting[DashboardSnapshot_RunSummary]
+
+  subgraph Integrations[External_Integrations]
+    ProfileLookup[CustomerProfileLookup]
+    FeatureProvider[RiskFeatureProvider]
+  end
+
+  Enricher --> ProfileLookup
+  Risk --> FeatureProvider
+
+  Tools[PublishSampleEvents] --> file
+  Config[AppConfig] -.-> ES
+  Config -.-> Pipeline```
+
+## Diagram Architektury
+```mermaid
+```
