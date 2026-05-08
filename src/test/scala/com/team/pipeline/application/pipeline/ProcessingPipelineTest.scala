@@ -32,8 +32,42 @@ import fs2.Stream
 import munit.CatsEffectSuite
 
 import java.time.Instant
+import java.nio.file.Files
 
 class ProcessingPipelineTest extends CatsEffectSuite:
+  test("run ignores comments and blank lines in JSONL input") {
+    val content =
+      List(
+        "# comment",
+        "   ",
+        validLine(eventId = EventId(100)),
+        "",
+        "  # another comment",
+        validLine(eventId = EventId(101))
+      ).mkString("\n")
+
+    val makeTempFile = IO.blocking {
+      val path = Files.createTempFile("payment-event-pipeline-", ".jsonl")
+      Files.writeString(path, content)
+      path
+    }
+
+    makeTempFile.bracket { path =>
+      for
+        fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
+        summary <- ProcessingPipeline.run(
+          com.team.pipeline.infrastructure.file.JsonlInput.read(path),
+          fixture.dependencies
+        )
+      yield
+        assertEquals(summary.totalRead, 2)
+        assertEquals(summary.totalProcessed, 2)
+        assertEquals(summary.totalRejected, 0)
+    } { path =>
+      IO.blocking(Files.deleteIfExists(path)).void
+    }
+  }
+
   test("run rejects malformed JSON before lookup or storage") {
     for
       fixture <- TestFixture.create(customers = Map(customer.customerId -> customer))
