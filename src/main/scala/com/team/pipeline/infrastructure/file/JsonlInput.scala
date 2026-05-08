@@ -13,9 +13,8 @@ object JsonlInput:
     Files[IO]
       .readUtf8Lines(Path.fromNioPath(path))
       .zipWithIndex
-      .map { case (line, index) =>
-        EventSource.InputRecord(sourcePosition = index + 1, value = line)
+      .map { case (line, index) => (index + 1, line.trim) }
+      .collect {
+        case (sourcePosition, trimmed) if trimmed.nonEmpty && !trimmed.startsWith("#") =>
+          EventSource.InputRecord(sourcePosition = sourcePosition, value = trimmed)
       }
-      .zipWithNext
-      .filterNot { case (line, next) => line.value.isEmpty && next.isEmpty }
-      .map(_._1)

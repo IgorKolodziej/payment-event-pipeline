@@ -37,7 +37,6 @@ class EventSourceTest extends CatsEffectSuite:
   private val expectedLines =
     List(
       EventSource.InputRecord(1, """{"eventId":1}"""),
-      EventSource.InputRecord(2, ""),
       EventSource.InputRecord(3, """{"eventId":2}""")
     )
 

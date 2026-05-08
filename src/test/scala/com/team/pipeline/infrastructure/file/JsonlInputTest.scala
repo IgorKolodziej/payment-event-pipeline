@@ -31,10 +31,13 @@ class JsonlInputTest extends CatsEffectSuite:
     }
   }
 
-  test("read preserves blank lines for the pipeline to handle explicitly") {
+  test("read ignores blank lines and comment lines") {
     val input =
       """{"eventId":1}
         |
+        |   
+        |# comment
+        |  # comment with leading whitespace
         |{"eventId":2}
         |""".stripMargin
 
@@ -46,8 +49,7 @@ class JsonlInputTest extends CatsEffectSuite:
         lines,
         List(
           EventSource.InputRecord(1, """{"eventId":1}"""),
-          EventSource.InputRecord(2, ""),
-          EventSource.InputRecord(3, """{"eventId":2}""")
+          EventSource.InputRecord(6, """{"eventId":2}""")
         )
       )
     }
