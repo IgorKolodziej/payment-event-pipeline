@@ -1,5 +1,8 @@
 package com.team.pipeline.application.reporting
 
+import io.circe.Encoder
+import io.circe.generic.semiauto._
+
 import scala.collection.immutable.ListMap
 
 final case class DashboardSnapshot(
@@ -12,6 +15,9 @@ final case class DashboardSnapshot(
 )
 
 object DashboardSnapshot:
+  // Circe encoder
+  given Encoder[DashboardSnapshot] = deriveEncoder[DashboardSnapshot]
+
   def from(
       summary: RunSummary,
       topCountries: Int

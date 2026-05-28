@@ -5,6 +5,8 @@ import com.team.pipeline.domain.Alert
 import com.team.pipeline.domain.AlertType
 import com.team.pipeline.domain.DataError
 import com.team.pipeline.domain.FinalDecision
+import io.circe.Encoder
+import io.circe.generic.semiauto._
 
 final case class RunSummary(
     totalRead: Int,
@@ -18,6 +20,8 @@ final case class RunSummary(
 )
 
 object RunSummary:
+  // Circe encoder for RunSummary
+  given Encoder[RunSummary] = deriveEncoder[RunSummary]
   val empty: RunSummary =
     RunSummary(
       totalRead = 0,
