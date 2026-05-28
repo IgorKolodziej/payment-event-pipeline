@@ -1,0 +1,948 @@
+{
+    "version": "1.4.0",
+    "project": {
+        "name": "root",
+        "directory": "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline",
+        "workspaceDir": "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline",
+        "sources": [
+            "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/src/main/scala",
+            "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/src/main/scala-3",
+            "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/src/main/java",
+            "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/target/scala-3.3.7/src_managed/main"
+        ],
+        "dependencies": [
+            
+        ],
+        "classpath": [
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-library_3/3.3.7/scala3-library_3-3.3.7.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_3/2.13.0/cats-core_3-2.13.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect_3/3.7.0/cats-effect_3-3.7.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-core_3/3.13.0/fs2-core_3-3.13.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-io_3/3.13.0/fs2-io_3-3.13.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/fd4s/fs2-kafka_3/3.9.1/fs2-kafka_3-3.9.1.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_3/0.14.15/circe-core_3-0.14.15.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_3/0.14.15/circe-parser_3-0.14.15.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_3/0.14.15/circe-generic_3-0.14.15.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.3/config-1.4.3.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-core_3/1.0.0-RC11/doobie-core_3-1.0.0-RC11.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-postgres_3/1.0.0-RC11/doobie-postgres_3-1.0.0-RC11.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-hikari_3/1.0.0-RC11/doobie-hikari_3-1.0.0-RC11.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/5.6.4/mongodb-driver-sync-5.6.4.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.16/scala-library-2.13.16.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_3/2.13.0/cats-kernel_3-2.13.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-kernel_3/3.7.0/cats-effect-kernel_3-3.7.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-std_3/3.7.0/cats-effect-std_3-3.7.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-mtl_3/1.6.0/cats-mtl_3-1.6.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scodec/scodec-bits_3/1.2.4/scodec-bits_3-1.2.4.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/comcast/ip4s-core_3/3.8.0/ip4s-core_3-3.8.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.9.1/kafka-clients-3.9.1.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_3/0.14.15/circe-numbers_3-0.14.15.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_3/0.14.15/circe-jawn_3-0.14.15.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-free_3/1.0.0-RC11/doobie-free_3-1.0.0-RC11.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/typename_3/1.1.0/typename_3-1.1.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/postgresql/postgresql/42.7.8/postgresql-42.7.8.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/zaxxer/HikariCP/7.0.2/HikariCP-7.0.2.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson/5.6.4/bson-5.6.4.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/5.6.4/mongodb-driver-core-5.6.4.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/literally_3/1.2.0/literally_3-1.2.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/idna4s-core_3/0.1.0/idna4s-core_3-0.1.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.6-4/zstd-jni-1.5.6-4.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/jawn-parser_3/1.6.0/jawn-parser_3-1.6.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-free_3/2.13.0/cats-free_3-2.13.0.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.49.5/checker-qual-3.49.5.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson-record-codec/5.6.4/bson-record-codec-5.6.4.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-collections-core_3/0.9.10/cats-collections-core_3-0.9.10.jar",
+            "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/algebra_3/2.13.0/algebra_3-2.13.0.jar"
+        ],
+        "out": "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/.bloop/root",
+        "classesDir": "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/.bloop/root/scala-3.3.7/classes",
+        "resources": [
+            "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/src/main/resources",
+            "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/target/scala-3.3.7/resource_managed/main"
+        ],
+        "scala": {
+            "organization": "org.scala-lang",
+            "name": "scala-compiler",
+            "version": "3.3.7",
+            "options": [
+                
+            ],
+            "jars": [
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-library_3/3.3.7/scala3-library_3-3.3.7.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.16/scala-library-2.13.16.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-compiler_3/3.3.7/scala3-compiler_3-3.3.7.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-interfaces/3.3.7/scala3-interfaces-3.3.7.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/tasty-core_3/3.3.7/tasty-core_3-3.3.7.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-asm/9.8.0-scala-1/scala-asm-9.8.0-scala-1.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/compiler-interface/1.10.7/compiler-interface-1.10.7.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/jline/jline-reader/3.29.0/jline-reader-3.29.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/jline/jline-terminal/3.29.0/jline-terminal-3.29.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/jline/jline-terminal-jni/3.29.0/jline-terminal-jni-3.29.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/util-interface/1.10.7/util-interface-1.10.7.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/jline/jline-native/3.29.0/jline-native-3.29.0.jar"
+            ],
+            "setup": {
+                "order": "mixed",
+                "addLibraryToBootClasspath": false,
+                "addCompilerToClasspath": false,
+                "addExtraJarsToClasspath": false,
+                "manageBootClasspath": false,
+                "filterLibraryFromClasspath": false
+            },
+            "bridgeJars": [
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-sbt-bridge/3.3.7/scala3-sbt-bridge-3.3.7.jar"
+            ]
+        },
+        "java": {
+            "options": [
+                
+            ]
+        },
+        "test": {
+            "frameworks": [
+                {
+                    "names": [
+                        "org.scalacheck.ScalaCheckFramework"
+                    ]
+                },
+                {
+                    "names": [
+                        "org.specs2.runner.Specs2Framework",
+                        "org.specs2.runner.SpecsFramework"
+                    ]
+                },
+                {
+                    "names": [
+                        "org.specs.runner.SpecsFramework"
+                    ]
+                },
+                {
+                    "names": [
+                        "org.scalatest.tools.Framework",
+                        "org.scalatest.tools.ScalaTestFramework"
+                    ]
+                },
+                {
+                    "names": [
+                        "com.novocode.junit.JUnitFramework"
+                    ]
+                },
+                {
+                    "names": [
+                        "munit.Framework"
+                    ]
+                },
+                {
+                    "names": [
+                        "zio.test.sbt.ZTestFramework"
+                    ]
+                },
+                {
+                    "names": [
+                        "weaver.framework.CatsEffect"
+                    ]
+                },
+                {
+                    "names": [
+                        "hedgehog.sbt.Framework"
+                    ]
+                }
+            ],
+            "options": {
+                "excludes": [
+                    
+                ],
+                "arguments": [
+                    
+                ]
+            }
+        },
+        "platform": {
+            "name": "jvm",
+            "config": {
+                "home": "/Library/Java/JavaVirtualMachines/jdk-25.jdk/Contents/Home",
+                "options": [
+                    "-Duser.dir=/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline"
+                ]
+            },
+            "mainClass": [
+                
+            ],
+            "runtimeConfig": {
+                "home": "/Library/Java/JavaVirtualMachines/jdk-25.jdk/Contents/Home",
+                "options": [
+                    "-Duser.dir=/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline"
+                ]
+            },
+            "classpath": [
+                "/Users/tlenekksenonu/Desktop/MojeProjekty/payment-event-pipeline/.bloop/root/scala-3.3.7/classes",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-library_3/3.3.7/scala3-library_3-3.3.7.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_3/2.13.0/cats-core_3-2.13.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect_3/3.7.0/cats-effect_3-3.7.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-core_3/3.13.0/fs2-core_3-3.13.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-io_3/3.13.0/fs2-io_3-3.13.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/fd4s/fs2-kafka_3/3.9.1/fs2-kafka_3-3.9.1.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_3/0.14.15/circe-core_3-0.14.15.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_3/0.14.15/circe-parser_3-0.14.15.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_3/0.14.15/circe-generic_3-0.14.15.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.3/config-1.4.3.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-core_3/1.0.0-RC11/doobie-core_3-1.0.0-RC11.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-postgres_3/1.0.0-RC11/doobie-postgres_3-1.0.0-RC11.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-hikari_3/1.0.0-RC11/doobie-hikari_3-1.0.0-RC11.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/5.6.4/mongodb-driver-sync-5.6.4.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.16/scala-library-2.13.16.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_3/2.13.0/cats-kernel_3-2.13.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-kernel_3/3.7.0/cats-effect-kernel_3-3.7.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-std_3/3.7.0/cats-effect-std_3-3.7.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-mtl_3/1.6.0/cats-mtl_3-1.6.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scodec/scodec-bits_3/1.2.4/scodec-bits_3-1.2.4.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/comcast/ip4s-core_3/3.8.0/ip4s-core_3-3.8.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.9.1/kafka-clients-3.9.1.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_3/0.14.15/circe-numbers_3-0.14.15.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_3/0.14.15/circe-jawn_3-0.14.15.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-free_3/1.0.0-RC11/doobie-free_3-1.0.0-RC11.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/typename_3/1.1.0/typename_3-1.1.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/postgresql/postgresql/42.7.8/postgresql-42.7.8.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/zaxxer/HikariCP/7.0.2/HikariCP-7.0.2.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson/5.6.4/bson-5.6.4.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/5.6.4/mongodb-driver-core-5.6.4.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/literally_3/1.2.0/literally_3-1.2.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/idna4s-core_3/0.1.0/idna4s-core_3-0.1.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.6-4/zstd-jni-1.5.6-4.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/jawn-parser_3/1.6.0/jawn-parser_3-1.6.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-free_3/2.13.0/cats-free_3-2.13.0.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.49.5/checker-qual-3.49.5.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson-record-codec/5.6.4/bson-record-codec-5.6.4.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-collections-core_3/0.9.10/cats-collections-core_3-0.9.10.jar",
+                "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/algebra_3/2.13.0/algebra_3-2.13.0.jar"
+            ]
+        },
+        "resolution": {
+            "modules": [
+                {
+                    "organization": "org.scala-lang",
+                    "name": "scala3-library_3",
+                    "version": "3.3.7",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "scala3-library_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-library_3/3.3.7/scala3-library_3-3.3.7.jar"
+                        },
+                        {
+                            "name": "scala3-library_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala3-library_3/3.3.7/scala3-library_3-3.3.7-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-core_3",
+                    "version": "2.13.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-core_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_3/2.13.0/cats-core_3-2.13.0.jar"
+                        },
+                        {
+                            "name": "cats-core_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-core_3/2.13.0/cats-core_3-2.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-effect_3",
+                    "version": "3.7.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-effect_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect_3/3.7.0/cats-effect_3-3.7.0.jar"
+                        },
+                        {
+                            "name": "cats-effect_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect_3/3.7.0/cats-effect_3-3.7.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "co.fs2",
+                    "name": "fs2-core_3",
+                    "version": "3.13.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "fs2-core_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-core_3/3.13.0/fs2-core_3-3.13.0.jar"
+                        },
+                        {
+                            "name": "fs2-core_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-core_3/3.13.0/fs2-core_3-3.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "co.fs2",
+                    "name": "fs2-io_3",
+                    "version": "3.13.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "fs2-io_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-io_3/3.13.0/fs2-io_3-3.13.0.jar"
+                        },
+                        {
+                            "name": "fs2-io_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/co/fs2/fs2-io_3/3.13.0/fs2-io_3-3.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.fd4s",
+                    "name": "fs2-kafka_3",
+                    "version": "3.9.1",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "fs2-kafka_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/fd4s/fs2-kafka_3/3.9.1/fs2-kafka_3-3.9.1.jar"
+                        },
+                        {
+                            "name": "fs2-kafka_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/fd4s/fs2-kafka_3/3.9.1/fs2-kafka_3-3.9.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "io.circe",
+                    "name": "circe-core_3",
+                    "version": "0.14.15",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "circe-core_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_3/0.14.15/circe-core_3-0.14.15.jar"
+                        },
+                        {
+                            "name": "circe-core_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-core_3/0.14.15/circe-core_3-0.14.15-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "io.circe",
+                    "name": "circe-parser_3",
+                    "version": "0.14.15",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "circe-parser_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_3/0.14.15/circe-parser_3-0.14.15.jar"
+                        },
+                        {
+                            "name": "circe-parser_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-parser_3/0.14.15/circe-parser_3-0.14.15-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "io.circe",
+                    "name": "circe-generic_3",
+                    "version": "0.14.15",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "circe-generic_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_3/0.14.15/circe-generic_3-0.14.15.jar"
+                        },
+                        {
+                            "name": "circe-generic_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-generic_3/0.14.15/circe-generic_3-0.14.15-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.typesafe",
+                    "name": "config",
+                    "version": "1.4.3",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "config",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.3/config-1.4.3.jar"
+                        },
+                        {
+                            "name": "config",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/typesafe/config/1.4.3/config-1.4.3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.tpolecat",
+                    "name": "doobie-core_3",
+                    "version": "1.0.0-RC11",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "doobie-core_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-core_3/1.0.0-RC11/doobie-core_3-1.0.0-RC11.jar"
+                        },
+                        {
+                            "name": "doobie-core_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-core_3/1.0.0-RC11/doobie-core_3-1.0.0-RC11-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.tpolecat",
+                    "name": "doobie-postgres_3",
+                    "version": "1.0.0-RC11",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "doobie-postgres_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-postgres_3/1.0.0-RC11/doobie-postgres_3-1.0.0-RC11.jar"
+                        },
+                        {
+                            "name": "doobie-postgres_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-postgres_3/1.0.0-RC11/doobie-postgres_3-1.0.0-RC11-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.tpolecat",
+                    "name": "doobie-hikari_3",
+                    "version": "1.0.0-RC11",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "doobie-hikari_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-hikari_3/1.0.0-RC11/doobie-hikari_3-1.0.0-RC11.jar"
+                        },
+                        {
+                            "name": "doobie-hikari_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-hikari_3/1.0.0-RC11/doobie-hikari_3-1.0.0-RC11-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.mongodb",
+                    "name": "mongodb-driver-sync",
+                    "version": "5.6.4",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "mongodb-driver-sync",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/5.6.4/mongodb-driver-sync-5.6.4.jar"
+                        },
+                        {
+                            "name": "mongodb-driver-sync",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/5.6.4/mongodb-driver-sync-5.6.4-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.scala-lang",
+                    "name": "scala-library",
+                    "version": "2.13.16",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "scala-library",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.16/scala-library-2.13.16.jar"
+                        },
+                        {
+                            "name": "scala-library",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.13.16/scala-library-2.13.16-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-kernel_3",
+                    "version": "2.13.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-kernel_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_3/2.13.0/cats-kernel_3-2.13.0.jar"
+                        },
+                        {
+                            "name": "cats-kernel_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-kernel_3/2.13.0/cats-kernel_3-2.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-effect-kernel_3",
+                    "version": "3.7.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-effect-kernel_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-kernel_3/3.7.0/cats-effect-kernel_3-3.7.0.jar"
+                        },
+                        {
+                            "name": "cats-effect-kernel_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-kernel_3/3.7.0/cats-effect-kernel_3-3.7.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-effect-std_3",
+                    "version": "3.7.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-effect-std_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-std_3/3.7.0/cats-effect-std_3-3.7.0.jar"
+                        },
+                        {
+                            "name": "cats-effect-std_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-effect-std_3/3.7.0/cats-effect-std_3-3.7.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-mtl_3",
+                    "version": "1.6.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-mtl_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-mtl_3/1.6.0/cats-mtl_3-1.6.0.jar"
+                        },
+                        {
+                            "name": "cats-mtl_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-mtl_3/1.6.0/cats-mtl_3-1.6.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.scodec",
+                    "name": "scodec-bits_3",
+                    "version": "1.2.4",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "scodec-bits_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scodec/scodec-bits_3/1.2.4/scodec-bits_3-1.2.4.jar"
+                        },
+                        {
+                            "name": "scodec-bits_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/scodec/scodec-bits_3/1.2.4/scodec-bits_3-1.2.4-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.comcast",
+                    "name": "ip4s-core_3",
+                    "version": "3.8.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "ip4s-core_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/comcast/ip4s-core_3/3.8.0/ip4s-core_3-3.8.0.jar"
+                        },
+                        {
+                            "name": "ip4s-core_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/comcast/ip4s-core_3/3.8.0/ip4s-core_3-3.8.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.apache.kafka",
+                    "name": "kafka-clients",
+                    "version": "3.9.1",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "kafka-clients",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.9.1/kafka-clients-3.9.1.jar"
+                        },
+                        {
+                            "name": "kafka-clients",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.9.1/kafka-clients-3.9.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "io.circe",
+                    "name": "circe-numbers_3",
+                    "version": "0.14.15",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "circe-numbers_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_3/0.14.15/circe-numbers_3-0.14.15.jar"
+                        },
+                        {
+                            "name": "circe-numbers_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-numbers_3/0.14.15/circe-numbers_3-0.14.15-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "io.circe",
+                    "name": "circe-jawn_3",
+                    "version": "0.14.15",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "circe-jawn_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_3/0.14.15/circe-jawn_3-0.14.15.jar"
+                        },
+                        {
+                            "name": "circe-jawn_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/io/circe/circe-jawn_3/0.14.15/circe-jawn_3-0.14.15-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.tpolecat",
+                    "name": "doobie-free_3",
+                    "version": "1.0.0-RC11",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "doobie-free_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-free_3/1.0.0-RC11/doobie-free_3-1.0.0-RC11.jar"
+                        },
+                        {
+                            "name": "doobie-free_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/doobie-free_3/1.0.0-RC11/doobie-free_3-1.0.0-RC11-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.tpolecat",
+                    "name": "typename_3",
+                    "version": "1.1.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "typename_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/typename_3/1.1.0/typename_3-1.1.0.jar"
+                        },
+                        {
+                            "name": "typename_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/tpolecat/typename_3/1.1.0/typename_3-1.1.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.postgresql",
+                    "name": "postgresql",
+                    "version": "42.7.8",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "postgresql",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/postgresql/postgresql/42.7.8/postgresql-42.7.8.jar"
+                        },
+                        {
+                            "name": "postgresql",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/postgresql/postgresql/42.7.8/postgresql-42.7.8-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.zaxxer",
+                    "name": "HikariCP",
+                    "version": "7.0.2",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "HikariCP",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/zaxxer/HikariCP/7.0.2/HikariCP-7.0.2.jar"
+                        },
+                        {
+                            "name": "HikariCP",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/zaxxer/HikariCP/7.0.2/HikariCP-7.0.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.slf4j",
+                    "name": "slf4j-api",
+                    "version": "1.7.36",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "slf4j-api",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar"
+                        },
+                        {
+                            "name": "slf4j-api",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.mongodb",
+                    "name": "bson",
+                    "version": "5.6.4",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "bson",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson/5.6.4/bson-5.6.4.jar"
+                        },
+                        {
+                            "name": "bson",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson/5.6.4/bson-5.6.4-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.mongodb",
+                    "name": "mongodb-driver-core",
+                    "version": "5.6.4",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "mongodb-driver-core",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/5.6.4/mongodb-driver-core-5.6.4.jar"
+                        },
+                        {
+                            "name": "mongodb-driver-core",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/5.6.4/mongodb-driver-core-5.6.4-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "literally_3",
+                    "version": "1.2.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "literally_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/literally_3/1.2.0/literally_3-1.2.0.jar"
+                        },
+                        {
+                            "name": "literally_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/literally_3/1.2.0/literally_3-1.2.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "idna4s-core_3",
+                    "version": "0.1.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "idna4s-core_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/idna4s-core_3/0.1.0/idna4s-core_3-0.1.0.jar"
+                        },
+                        {
+                            "name": "idna4s-core_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/idna4s-core_3/0.1.0/idna4s-core_3-0.1.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "com.github.luben",
+                    "name": "zstd-jni",
+                    "version": "1.5.6-4",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "zstd-jni",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.6-4/zstd-jni-1.5.6-4.jar"
+                        },
+                        {
+                            "name": "zstd-jni",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/com/github/luben/zstd-jni/1.5.6-4/zstd-jni-1.5.6-4-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.lz4",
+                    "name": "lz4-java",
+                    "version": "1.8.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "lz4-java",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0.jar"
+                        },
+                        {
+                            "name": "lz4-java",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/lz4/lz4-java/1.8.0/lz4-java-1.8.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.xerial.snappy",
+                    "name": "snappy-java",
+                    "version": "1.1.10.5",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "snappy-java",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar"
+                        },
+                        {
+                            "name": "snappy-java",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "jawn-parser_3",
+                    "version": "1.6.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "jawn-parser_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/jawn-parser_3/1.6.0/jawn-parser_3-1.6.0.jar"
+                        },
+                        {
+                            "name": "jawn-parser_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/jawn-parser_3/1.6.0/jawn-parser_3-1.6.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-free_3",
+                    "version": "2.13.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-free_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-free_3/2.13.0/cats-free_3-2.13.0.jar"
+                        },
+                        {
+                            "name": "cats-free_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-free_3/2.13.0/cats-free_3-2.13.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.checkerframework",
+                    "name": "checker-qual",
+                    "version": "3.49.5",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "checker-qual",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.49.5/checker-qual-3.49.5.jar"
+                        },
+                        {
+                            "name": "checker-qual",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.49.5/checker-qual-3.49.5-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.mongodb",
+                    "name": "bson-record-codec",
+                    "version": "5.6.4",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "bson-record-codec",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson-record-codec/5.6.4/bson-record-codec-5.6.4.jar"
+                        },
+                        {
+                            "name": "bson-record-codec",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/mongodb/bson-record-codec/5.6.4/bson-record-codec-5.6.4-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "cats-collections-core_3",
+                    "version": "0.9.10",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "cats-collections-core_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-collections-core_3/0.9.10/cats-collections-core_3-0.9.10.jar"
+                        },
+                        {
+                            "name": "cats-collections-core_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/cats-collections-core_3/0.9.10/cats-collections-core_3-0.9.10-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization": "org.typelevel",
+                    "name": "algebra_3",
+                    "version": "2.13.0",
+                    "configurations": "default",
+                    "artifacts": [
+                        {
+                            "name": "algebra_3",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/algebra_3/2.13.0/algebra_3-2.13.0.jar"
+                        },
+                        {
+                            "name": "algebra_3",
+                            "classifier": "sources",
+                            "path": "/Users/tlenekksenonu/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/typelevel/algebra_3/2.13.0/algebra_3-2.13.0-sources.jar"
+                        }
+                    ]
+                }
+            ]
+        },
+        "tags": [
+            "library"
+        ]
+    }
+}
