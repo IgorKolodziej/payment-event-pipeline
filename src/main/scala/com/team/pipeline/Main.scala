@@ -6,6 +6,8 @@ import cats.effect.Resource
 import com.mongodb.client.MongoClients
 import com.team.pipeline.application.pipeline.ProcessingPipeline
 import com.team.pipeline.application.reporting.RunSummary
+import com.team.pipeline.application.reporting.DashboardSnapshot
+import com.team.pipeline.application.reporting.toDashboardSnapshot
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
@@ -22,7 +24,8 @@ import com.team.pipeline.infrastructure.redpanda.RedpandaEventSource
 import com.team.pipeline.ports.EventSource
 import doobie.hikari.{Config as HikariConfig, HikariTransactor}
 
-import java.nio.file.Files
+import java.nio.file.{Files, Paths}
+import com.team.pipeline.reporting.JsonWriters
 
 object Main extends IOApp.Simple:
   def run: IO[Unit] =
@@ -46,6 +49,15 @@ object Main extends IOApp.Simple:
     for
       _ <- IO.blocking(Files.createDirectories(config.app.outputDir))
       summary <- ProcessingPipeline.run(eventSource.events, dependencies)
+      // write summary and dashboard snapshot
+      _ <- IO.blocking {
+        val outDir = config.app.outputDir
+        val reportPath = outDir.resolve("report.json")
+        JsonWriters.writeJsonToFile(summary, reportPath)
+        val dashboard = summary.toDashboardSnapshot(topCountries = 10)
+        val dashPath = outDir.resolve("dashboard_snapshot.json")
+        JsonWriters.writeJsonToFile(dashboard, dashPath)
+      }
     yield summary
 
   private[pipeline] def eventSource(config: AppConfig): EventSource =
