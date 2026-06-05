@@ -28,3 +28,4 @@ out/*
 .DS_Store
 
 .llm_context/
+.bloop/
