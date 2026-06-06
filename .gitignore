@@ -24,6 +24,9 @@ application.local.conf
 out/*
 !out/.gitkeep
 
+# generated Scala.js dashboard bundle
+dashboard/assets/
+
 # OS files
 .DS_Store
 
