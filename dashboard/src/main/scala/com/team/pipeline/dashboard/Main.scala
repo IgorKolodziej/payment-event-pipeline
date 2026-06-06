@@ -4,6 +4,8 @@ import com.raquo.laminar.api.L.*
 import com.team.pipeline.dashboard.contract.DashboardDataset
 import org.scalajs.dom
 
+import scala.scalajs.js.timers.*
+
 /** Entry point of the Scala.js + Laminar payment-events dashboard. */
 object Main:
 
@@ -15,6 +17,9 @@ object Main:
   private val state: Var[LoadState] = Var(LoadState.Loading)
   private val filterVars: FilterVars = FilterVars.create()
   private val selectedEvent: Var[Option[Int]] = Var(None)
+  private val autoRefresh: Var[Boolean] = Var(false)
+
+  private var timerHandle: Option[SetIntervalHandle] = None
 
   private val filterStateSignal: Signal[FilterState] =
     filterVars.from.signal
@@ -38,21 +43,32 @@ object Main:
 
   def main(args: Array[String]): Unit =
     renderOnDomContentLoaded(dom.document.getElementById("app"), appElement())
-    load()
+    load(initial = true)
 
   private def opt(value: String): Option[String] =
     Option(value).map(_.trim).filter(_.nonEmpty)
 
-  private def load(): Unit =
-    state.set(LoadState.Loading)
+  private def load(initial: Boolean): Unit =
+    if initial then state.set(LoadState.Loading)
     DataLoader.load {
       case Right(dataset) => state.set(LoadState.Loaded(dataset))
       case Left(message)  => state.set(LoadState.Failed(message))
     }
 
+  private def startTimer(): Unit =
+    stopTimer()
+    timerHandle = Some(setInterval(2000.0)(load(initial = false)))
+
+  private def stopTimer(): Unit =
+    timerHandle.foreach(clearInterval)
+    timerHandle = None
+
   private def appElement(): HtmlElement =
     div(
       cls := "app",
+      autoRefresh.signal --> Observer[Boolean] { enabled =>
+        if enabled then startTimer() else stopTimer()
+      },
       headerBar(),
       child <-- state.signal.map(renderState)
     )
@@ -74,7 +90,16 @@ object Main:
             case _                         => ""
           }
         ),
-        button(cls := "btn", "Refresh now", onClick --> (_ => load()))
+        label(
+          cls := "toggle",
+          input(
+            typ := "checkbox",
+            checked <-- autoRefresh.signal,
+            onInput.mapToChecked --> autoRefresh
+          ),
+          span("Auto-refresh (2s)")
+        ),
+        button(cls := "btn", "Refresh now", onClick --> (_ => load(initial = false)))
       )
     )
 
