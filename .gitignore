@@ -29,3 +29,7 @@ out/*
 
 .llm_context/
 .bloop/
+
+project/metals.sbt
+project/projekt_scala
+project/system.mmd
