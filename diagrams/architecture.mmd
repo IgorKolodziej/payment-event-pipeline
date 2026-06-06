@@ -1,0 +1,59 @@
+flowchart LR
+  subgraph ING[Ingestia]
+    file[Plik: sample-data]
+    redpanda[Redpanda]
+  end
+
+  subgraph PROC[Przetwarzanie]
+    parser[EventParser]
+    validator[EventValidator / Normalizer]
+    enricher[EventEnricher]
+    pipeline[ProcessingPipeline]
+    risk[RiskEngine / RiskPolicy]
+    decision[PaymentDecisionEngine]
+    eligibility[EligibilityChecker]
+  end
+
+  subgraph STORE[Magazyny danych]
+    postgres[Postgres: ProcessedEventStore]
+    mongo[MongoDB: AlertStore & Violations]
+  end
+
+  subgraph EXT[Zewnętrzne usługi]
+    profileApi[CustomerProfileLookup]
+    featureApi[RiskFeatureProvider]
+  end
+
+  subgraph MON[Monitoring / Raporty]
+    dashboard[DashboardSnapshot / RunSummary]
+  end
+
+  subgraph TOOLS[Narzędzia]
+    publishTool[PublishSampleEvents]
+    appConfig[AppConfig]
+  end
+
+  file --> parser
+  redpanda --> parser
+
+  parser --> validator
+  validator --> enricher
+  enricher --> pipeline
+
+  pipeline --> eligibility
+  pipeline --> risk
+  pipeline --> decision
+
+  eligibility --> mongo
+  risk --> mongo
+  decision --> postgres
+
+  enricher --> profileApi
+  risk --> featureApi
+
+  postgres --> dashboard
+  mongo --> dashboard
+
+  publishTool --> file
+  appConfig -.-> parser
+  appConfig -.-> pipeline
