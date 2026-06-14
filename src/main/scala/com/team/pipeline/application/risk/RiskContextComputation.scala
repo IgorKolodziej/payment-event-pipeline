@@ -1,12 +1,10 @@
-package com.team.pipeline.infrastructure.mongo
+package com.team.pipeline.application.risk
 
-import com.team.pipeline.application.risk.CustomerRiskContext
-import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.domain.EnrichedPaymentEvent
-import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentMethod
+import com.team.pipeline.ports.RiskHistoryEvent
 
 import java.math.MathContext
 import java.math.RoundingMode
@@ -16,24 +14,26 @@ import java.time.ZoneOffset
 
 object RiskContextComputation:
 
-  final case class HistoryEvent(
-      eventId: EventId,
-      timestamp: Instant,
-      amount: BigDecimal,
-      status: EventStatus,
-      paymentMethod: PaymentMethod,
-      deviceId: String,
-      finalDecision: FinalDecision
-  )
-
   private val StddevMathContext: MathContext =
     MathContext(16, RoundingMode.HALF_UP)
 
   def compute(
       current: EnrichedPaymentEvent,
-      rawHistory: List[HistoryEvent],
-      lateNightStartHour: Int = RiskPolicy.default.lateNightStartHour,
-      lateNightEndHour: Int = RiskPolicy.default.lateNightEndHour
+      rawHistory: List[RiskHistoryEvent],
+      policy: RiskPolicy = RiskPolicy.default
+  ): CustomerRiskContext =
+    compute(
+      current,
+      rawHistory,
+      lateNightStartHour = policy.lateNightStartHour,
+      lateNightEndHour = policy.lateNightEndHour
+    )
+
+  def compute(
+      current: EnrichedPaymentEvent,
+      rawHistory: List[RiskHistoryEvent],
+      lateNightStartHour: Int,
+      lateNightEndHour: Int
   ): CustomerRiskContext =
     val currentEventId = current.event.eventId
     val now = current.event.timestamp

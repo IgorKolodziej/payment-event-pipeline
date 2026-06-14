@@ -1,8 +1,7 @@
-package com.team.pipeline.ports
+package com.team.pipeline.application.risk
 
 import cats.effect.IO
-import com.team.pipeline.application.risk.CustomerRiskContext
 import com.team.pipeline.domain.EnrichedPaymentEvent
 
-trait RiskFeatureProvider:
+trait RiskContextProvider:
   def contextFor(event: EnrichedPaymentEvent): IO[CustomerRiskContext]

@@ -40,7 +40,8 @@ EventSource
   -> EventValidator / EventNormalizer
   -> CustomerProfileLookup(PostgreSQL)
   -> EventEnricher
-  -> RiskFeatureProvider(MongoDB)
+  -> RiskContextProvider
+     -> RiskHistoryProvider(MongoDB)
   -> EligibilityChecker + RiskEngine
   -> PaymentDecisionEngine
   -> MongoDB stores
@@ -48,6 +49,7 @@ EventSource
 ```
 
 The core pipeline depends on small ports, not concrete infrastructure. File replay, paced replay, Redpanda, PostgreSQL, and MongoDB live behind adapters in `infrastructure`.
+Risk context is computed in `application.risk` from historical processed events loaded through a Mongo-backed `RiskHistoryProvider`.
 
 ## Technology
 
@@ -370,6 +372,8 @@ flowchart LR
   Enricher --> Pipeline[ProcessingPipeline]
 
   Pipeline --> Eligibility[EligibilityChecker]
+  Pipeline --> RiskContext[RiskContextProvider]
+  RiskContext --> RiskHistory[RiskHistoryProvider_MongoDB]
   Pipeline --> Risk[RiskEngine]
   Pipeline --> Decision[PaymentDecisionEngine]
 
@@ -381,15 +385,16 @@ flowchart LR
 
   subgraph Integrations[External_Integrations]
     ProfileLookup[CustomerProfileLookup]
-    FeatureProvider[RiskFeatureProvider]
+    RiskHistory
   end
 
   Enricher --> ProfileLookup
-  Risk --> FeatureProvider
+  RiskContext --> Risk
 
   Tools[PublishSampleEvents] --> file
   Config[AppConfig] -.-> ES
-  Config -.-> Pipeline```
+  Config -.-> Pipeline
+```
 
 ## Diagram Architektury
 ```mermaid
@@ -412,6 +417,8 @@ flowchart LR
   Enricher --> Pipeline[ProcessingPipeline]
 
   Pipeline --> Eligibility[EligibilityChecker]
+  Pipeline --> RiskContext[RiskContextProvider]
+  RiskContext --> RiskHistory[RiskHistoryProvider_MongoDB]
   Pipeline --> Risk[RiskEngine]
   Pipeline --> Decision[PaymentDecisionEngine]
 
@@ -423,15 +430,16 @@ flowchart LR
 
   subgraph Integrations[External_Integrations]
     ProfileLookup[CustomerProfileLookup]
-    FeatureProvider[RiskFeatureProvider]
+    RiskHistory
   end
 
   Enricher --> ProfileLookup
-  Risk --> FeatureProvider
+  RiskContext --> Risk
 
   Tools[PublishSampleEvents] --> file
   Config[AppConfig] -.-> ES
-  Config -.-> Pipeline```
+  Config -.-> Pipeline
+```
 
 ## Diagram Architektury
 ```mermaid
@@ -455,6 +463,8 @@ flowchart LR
   Enricher --> Pipeline[ProcessingPipeline]
 
   Pipeline --> Eligibility[EligibilityChecker]
+  Pipeline --> RiskContext[RiskContextProvider]
+  RiskContext --> RiskHistory[RiskHistoryProvider_MongoDB]
   Pipeline --> Risk[RiskEngine]
   Pipeline --> Decision[PaymentDecisionEngine]
 
@@ -466,15 +476,16 @@ flowchart LR
 
   subgraph Integrations[External_Integrations]
     ProfileLookup[CustomerProfileLookup]
-    FeatureProvider[RiskFeatureProvider]
+    RiskHistory
   end
 
   Enricher --> ProfileLookup
-  Risk --> FeatureProvider
+  RiskContext --> Risk
 
   Tools[PublishSampleEvents] --> file
   Config[AppConfig] -.-> ES
-  Config -.-> Pipeline```
+  Config -.-> Pipeline
+```
 
 ## Architecture Diagram
 Detailed technical structure and component dependencies.
@@ -501,6 +512,8 @@ flowchart LR
   Enricher --> Pipeline[ProcessingPipeline]
 
   Pipeline --> Eligibility[EligibilityChecker]
+  Pipeline --> RiskContext[RiskContextProvider]
+  RiskContext --> RiskHistory[RiskHistoryProvider_MongoDB]
   Pipeline --> Risk[RiskEngine]
   Pipeline --> Decision[PaymentDecisionEngine]
 
@@ -512,15 +525,16 @@ flowchart LR
 
   subgraph Integrations[External_Integrations]
     ProfileLookup[CustomerProfileLookup]
-    FeatureProvider[RiskFeatureProvider]
+    RiskHistory
   end
 
   Enricher --> ProfileLookup
-  Risk --> FeatureProvider
+  RiskContext --> Risk
 
   Tools[PublishSampleEvents] --> file
   Config[AppConfig] -.-> ES
-  Config -.-> Pipeline```
+  Config -.-> Pipeline
+```
 
 ### Component Dependencies
 ```mermaid

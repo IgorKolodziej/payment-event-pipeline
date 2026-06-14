@@ -7,6 +7,7 @@ import cats.effect.Ref
 import cats.effect.Resource
 import com.team.pipeline.application.pipeline.ProcessingPipeline
 import com.team.pipeline.application.risk.CustomerRiskContext
+import com.team.pipeline.application.risk.RiskContextProvider
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
@@ -30,7 +31,6 @@ import com.team.pipeline.ports.AlertStore
 import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
 import com.team.pipeline.ports.ProcessedEventStore
-import com.team.pipeline.ports.RiskFeatureProvider
 import munit.CatsEffectSuite
 
 import java.nio.file.Files
@@ -103,7 +103,7 @@ class MainTest extends CatsEffectSuite:
       override def find(customerId: CustomerId): IO[Option[CustomerProfile]] =
         IO.pure(Some(customer))
 
-    val riskFeatureProvider = new RiskFeatureProvider:
+    val riskContextProvider = new RiskContextProvider:
       override def contextFor(event: EnrichedPaymentEvent): IO[CustomerRiskContext] =
         IO.pure(emptyContext)
 
@@ -121,7 +121,7 @@ class MainTest extends CatsEffectSuite:
 
     ProcessingPipeline.Dependencies(
       customerLookup = customerLookup,
-      riskFeatureProvider = riskFeatureProvider,
+      riskContextProvider = riskContextProvider,
       processedEventStore = processedEventStore,
       eligibilityViolationStore = eligibilityViolationStore,
       alertStore = alertStore,

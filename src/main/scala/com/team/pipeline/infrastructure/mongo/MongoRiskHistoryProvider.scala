@@ -4,38 +4,35 @@ import cats.effect.IO
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
-import com.team.pipeline.application.risk.CustomerRiskContext
-import com.team.pipeline.application.risk.RiskPolicy
+import com.team.pipeline.domain.CustomerId
 import com.team.pipeline.domain.CustomerId.*
-import com.team.pipeline.domain.EnrichedPaymentEvent
 import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.EventId.*
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.PaymentMethod
-import com.team.pipeline.infrastructure.mongo.RiskContextComputation.HistoryEvent
-import com.team.pipeline.ports.RiskFeatureProvider
+import com.team.pipeline.ports.{RiskHistoryEvent, RiskHistoryProvider}
 import org.bson.Document
 
-import java.time.Duration
+import java.time.Instant
 import java.util.Date
 import scala.jdk.CollectionConverters.*
 
-final class MongoRiskFeatureProvider(
-    collection: MongoCollection[Document],
-    policy: RiskPolicy = RiskPolicy.default
-) extends RiskFeatureProvider:
+final class MongoRiskHistoryProvider(
+    collection: MongoCollection[Document]
+) extends RiskHistoryProvider:
 
-  override def contextFor(event: EnrichedPaymentEvent): IO[CustomerRiskContext] =
-    val customerId = event.event.customerId
-    val now = event.event.timestamp
-    val from30d = now.minus(Duration.ofDays(30))
-
+  override def historyFor(
+      customerId: CustomerId,
+      fromInclusive: Instant,
+      toExclusive: Instant,
+      excludeEventId: EventId
+  ): IO[List[RiskHistoryEvent]] =
     val filter = Filters.and(
       Filters.eq("customerId", customerId.value),
-      Filters.gte("timestamp", Date.from(from30d)),
-      Filters.lt("timestamp", Date.from(now)),
-      Filters.ne("eventId", event.event.eventId.value)
+      Filters.gte("timestamp", Date.from(fromInclusive)),
+      Filters.lt("timestamp", Date.from(toExclusive)),
+      Filters.ne("eventId", excludeEventId.value)
     )
 
     val projection = Projections.include(
@@ -49,25 +46,16 @@ final class MongoRiskFeatureProvider(
     )
 
     IO.blocking {
-      val docs =
-        collection
-          .find(filter)
-          .projection(projection)
-          .into(new java.util.ArrayList[Document]())
-          .asScala
-          .toList
-
-      val history = docs.map(toHistoryEvent)
-
-      RiskContextComputation.compute(
-        event,
-        history,
-        lateNightStartHour = policy.lateNightStartHour,
-        lateNightEndHour = policy.lateNightEndHour
-      )
+      collection
+        .find(filter)
+        .projection(projection)
+        .into(new java.util.ArrayList[Document]())
+        .asScala
+        .toList
+        .map(toRiskHistoryEvent)
     }
 
-  private def toHistoryEvent(doc: Document): HistoryEvent =
+  private def toRiskHistoryEvent(doc: Document): RiskHistoryEvent =
     val eventId = EventId(doc.getInteger("eventId").intValue())
     val timestamp = doc.getDate("timestamp").toInstant
     val amount = BigDecimal(doc.getString("amount"))
@@ -78,7 +66,7 @@ final class MongoRiskFeatureProvider(
     val finalDecision =
       parseStored("finalDecision", doc.getString("finalDecision"))(FinalDecision.fromCode)
 
-    HistoryEvent(
+    RiskHistoryEvent(
       eventId = eventId,
       timestamp = timestamp,
       amount = amount,

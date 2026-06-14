@@ -7,6 +7,7 @@ import com.team.pipeline.application.enrichment.EventEnricher
 import com.team.pipeline.application.parsing.EventParser
 import com.team.pipeline.application.reporting.RunSummary
 import com.team.pipeline.application.reporting.*
+import com.team.pipeline.application.risk.RiskContextProvider
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.application.validation.EventValidator
@@ -22,13 +23,12 @@ import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
 import com.team.pipeline.ports.EventSource
 import com.team.pipeline.ports.ProcessedEventStore
-import com.team.pipeline.ports.RiskFeatureProvider
 import fs2.Stream
 
 object ProcessingPipeline:
   final case class Dependencies(
       customerLookup: CustomerProfileLookup,
-      riskFeatureProvider: RiskFeatureProvider,
+      riskContextProvider: RiskContextProvider,
       processedEventStore: ProcessedEventStore,
       eligibilityViolationStore: EligibilityViolationStore,
       alertStore: AlertStore,
@@ -91,7 +91,7 @@ object ProcessingPipeline:
       dependencies: Dependencies
   ): IO[RecordOutcome] =
     for
-      context <- dependencies.riskFeatureProvider.contextFor(event)
+      context <- dependencies.riskContextProvider.contextFor(event)
       assessment = PaymentDecisionEngine.evaluate(event, context, dependencies.riskPolicy)
       processed = ProcessedEventMapper.from(event, assessment)
       alerts = assessment.risk.toList.flatMap(_.alerts)

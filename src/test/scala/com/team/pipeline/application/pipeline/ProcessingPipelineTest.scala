@@ -8,6 +8,7 @@ import cats.effect.IO
 import cats.effect.Ref
 import cats.syntax.all.*
 import com.team.pipeline.application.risk.CustomerRiskContext
+import com.team.pipeline.application.risk.RiskContextProvider
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.domain.Alert
@@ -27,7 +28,6 @@ import com.team.pipeline.ports.CustomerProfileLookup
 import com.team.pipeline.ports.EligibilityViolationStore
 import com.team.pipeline.ports.EventSource
 import com.team.pipeline.ports.ProcessedEventStore
-import com.team.pipeline.ports.RiskFeatureProvider
 import fs2.Stream
 import munit.CatsEffectSuite
 
@@ -301,7 +301,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
           override def find(customerId: CustomerId): IO[Option[CustomerProfile]] =
             lookupCalls.update(_ :+ customerId).as(customers.get(customerId))
 
-        val riskFeatureProvider = new RiskFeatureProvider:
+        val riskContextProvider = new RiskContextProvider:
           override def contextFor(event: EnrichedPaymentEvent): IO[CustomerRiskContext] =
             order.update(_ :+ s"context:${event.event.eventId.value}") *>
               contextCalls.update(_ :+ event.event.eventId).as(context)
@@ -327,7 +327,7 @@ class ProcessingPipelineTest extends CatsEffectSuite:
 
         val dependencies = ProcessingPipeline.Dependencies(
           customerLookup = customerLookup,
-          riskFeatureProvider = riskFeatureProvider,
+          riskContextProvider = riskContextProvider,
           processedEventStore = processedEventStore,
           eligibilityViolationStore = eligibilityViolationStore,
           alertStore = alertStore,
