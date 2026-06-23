@@ -41,14 +41,16 @@ object ExportDashboardMappers:
       asOptInt(doc, "eventId").getOrElse(Option(doc.getObjectId("_id")).map(_ => 0).getOrElse(0))
     val customerId = asOptInt(doc, "customerId").getOrElse(0)
 
+    // Normalize timestamp from various stored representations (Date, String, Number)
     val timestampStr = Option(doc.get("timestamp")) match
       case Some(d: Date)   => Instant.ofEpochMilli(d.getTime).toString
       case Some(s: String) =>
         try Instant.parse(s).toString
         catch
-          case _: Throwable            => s
-          case Some(l: java.lang.Long) => Instant.ofEpochMilli(l.longValue()).toString
-          case _                       => Instant.now.toString
+          case _: Throwable => s
+      case Some(n: java.lang.Number) => Instant.ofEpochMilli(n.longValue()).toString
+      case None                      => Instant.now.toString
+      case Some(other)               => other.toString
 
     val amountStr = Option(doc.get("amount")).map(_.toString).getOrElse("0.00")
 

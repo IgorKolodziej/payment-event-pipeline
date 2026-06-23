@@ -68,7 +68,8 @@ object ExportDashboardDataset:
 
       val alertsFind =
         alertsColl.find().projection(Projections.exclude("rawEmail", "hashedCustomerEmail"))
-      val violationsFind = violationsColl.find()
+      val violationsFind =
+        violationsColl.find().projection(Projections.exclude("rawEmail", "hashedCustomerEmail"))
 
       // Use canonical dashboard contract types and encoders
       import com.team.pipeline.dashboard.contract._
@@ -113,16 +114,50 @@ object ExportDashboardDataset:
         ).getOrElse(Option(doc.getObjectId("_id")).map(_ => 0).getOrElse(0))
         val customerId = asOptInt(doc, "customerId").getOrElse(0)
 
+        // Normalize timestamp from various stored representations (Date, String, Number)
         val timestampStr = Option(doc.get("timestamp")) match
           case Some(d: Date)   => Instant.ofEpochMilli(d.getTime).toString
           case Some(s: String) =>
             try Instant.parse(s).toString
             catch
-              case _: Throwable            => s
-              case Some(l: java.lang.Long) => Instant.ofEpochMilli(l.longValue()).toString
-              case _                       => Instant.now.toString
+              case _: Throwable => s
+          case Some(n: java.lang.Number) => Instant.ofEpochMilli(n.longValue()).toString
+          case None                      => Instant.now.toString
+          case Some(other)               => other.toString
 
-        val amountStr = Option(doc.get("amount")).map(_.toString).getOrElse("0.00")
+        // Normalize amount to a string with 2 decimal places
+        val amountStr = Option(doc.get("amount")).flatMap {
+          case bd: java.math.BigDecimal =>
+            Some(bd.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString)
+          case d: java.lang.Double => Some(new java.math.BigDecimal(d.toString).setScale(
+              2,
+              java.math.RoundingMode.HALF_UP
+            ).toPlainString)
+          case l: java.lang.Long => Some(new java.math.BigDecimal(l.toString).setScale(
+              2,
+              java.math.RoundingMode.HALF_UP
+            ).toPlainString)
+          case i: java.lang.Integer => Some(new java.math.BigDecimal(i.toString).setScale(
+              2,
+              java.math.RoundingMode.HALF_UP
+            ).toPlainString)
+          case s: String =>
+            try
+              Some(new java.math.BigDecimal(s).setScale(
+                2,
+                java.math.RoundingMode.HALF_UP
+              ).toPlainString)
+            catch
+              case _: Throwable => None
+          case other =>
+            try
+              Some(new java.math.BigDecimal(other.toString).setScale(
+                2,
+                java.math.RoundingMode.HALF_UP
+              ).toPlainString)
+            catch
+              case _: Throwable => None
+        }.getOrElse("0.00")
 
         val currency =
           asOptString(doc, "currency").getOrElse(asOptString(doc, "currencyCode").getOrElse(""))
