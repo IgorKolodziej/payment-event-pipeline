@@ -25,10 +25,16 @@ class ExportDashboardDatasetTest extends FunSuite:
       finalDecision = "Accepted"
     )
 
-    val alert = DashboardAlert(eventId = 1, customerId = 1, alertType = "CountryMismatch", riskScore = 5)
+    val alert =
+      DashboardAlert(eventId = 1, customerId = 1, alertType = "CountryMismatch", riskScore = 5)
     val violation = DashboardViolation(eventId = 1, customerId = 1, violationType = "Eligibility")
 
-    val dataset = DashboardDataset(generatedAt = java.time.Instant.now.toString, events = List(event), alerts = List(alert), violations = List(violation))
+    val dataset = DashboardDataset(
+      generatedAt = java.time.Instant.now.toString,
+      events = List(event),
+      alerts = List(alert),
+      violations = List(violation)
+    )
 
     val json = dataset.asJson.noSpaces
 

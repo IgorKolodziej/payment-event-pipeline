@@ -1,18 +1,23 @@
 package com.team.pipeline.tools
 
-/**
- * Skeleton exporter for dashboard dataset.
- * - Run with: sbt "runMain com.team.pipeline.tools.ExportDashboardDataset --since 2026-01-01 --limit 1000"
- * - This file is intentionally a safe skeleton that compiles. Fill mapping and DTOs when ready.
- */
+/** Skeleton exporter for dashboard dataset.
+  *   - Run with: sbt "runMain com.team.pipeline.tools.ExportDashboardDataset --since 2026-01-01
+  *     --limit 1000"
+  *   - This file is intentionally a safe skeleton that compiles. Fill mapping and DTOs when ready.
+  */
 object ExportDashboardDataset:
   def main(args: Array[String]): Unit =
     // Simple CLI parsing (very small) - extend as needed
-    val argMap = args.sliding(2,2).collect { case Array(k,v) => k -> v }.toMap
+    val argMap = args.sliding(2, 2).collect { case Array(k, v) => k -> v }.toMap
     val since = argMap.getOrElse("--since", "1970-01-01T00:00:00Z")
-    val limitOpt = argMap.get("--limit").flatMap(s => try Some(s.toInt) catch case _: Throwable => None)
+    val limitOpt = argMap.get("--limit").flatMap(s =>
+      try Some(s.toInt)
+      catch case _: Throwable => None
+    )
 
-    println(s"ExportDashboardDataset starting with since=$since limit=${limitOpt.getOrElse("none")}")
+    println(
+      s"ExportDashboardDataset starting with since=$since limit=${limitOpt.getOrElse("none")}"
+    )
 
     // Load configuration
     import com.team.pipeline.config.AppConfig
@@ -44,16 +49,25 @@ object ExportDashboardDataset:
       val violationsColl = db.getCollection(violationsCollName)
 
       // Build filter for since (timestamp stored as Date)
-      val sinceInstant = try Instant.parse(since) catch case _: Throwable => Instant.parse("1970-01-01T00:00:00Z")
+      val sinceInstant =
+        try Instant.parse(since)
+        catch case _: Throwable => Instant.parse("1970-01-01T00:00:00Z")
       val sinceDate = Date.from(sinceInstant)
       val filter = Filters.gte("timestamp", sinceDate)
 
       // Prepare iterables
       val processedFind = limitOpt match
-        case Some(l) => processedColl.find(filter).projection(Projections.exclude("rawEmail", "hashedCustomerEmail")).limit(l)
-        case None    => processedColl.find(filter).projection(Projections.exclude("rawEmail", "hashedCustomerEmail"))
+        case Some(l) => processedColl.find(filter).projection(Projections.exclude(
+            "rawEmail",
+            "hashedCustomerEmail"
+          )).limit(l)
+        case None => processedColl.find(filter).projection(Projections.exclude(
+            "rawEmail",
+            "hashedCustomerEmail"
+          ))
 
-      val alertsFind = alertsColl.find().projection(Projections.exclude("rawEmail", "hashedCustomerEmail"))
+      val alertsFind =
+        alertsColl.find().projection(Projections.exclude("rawEmail", "hashedCustomerEmail"))
       val violationsFind = violationsColl.find()
 
       // Use canonical dashboard contract types and encoders
@@ -73,32 +87,45 @@ object ExportDashboardDataset:
           case i: java.lang.Integer => Some(i.intValue())
           case l: java.lang.Long    => Some(l.intValue())
           case d: java.lang.Double  => Some(d.intValue())
-          case s: String           => try Some(s.toInt) catch case _: Throwable => None
-          case _ => None
+          case s: String            =>
+            try Some(s.toInt)
+            catch
+              case _: Throwable => None
+              case _            => None
         }
 
       def asOptDouble(doc: Document, key: String): Option[Double] =
         Option(doc.get(key)).flatMap {
-          case d: java.lang.Double => Some(d.doubleValue())
+          case d: java.lang.Double  => Some(d.doubleValue())
           case d: java.lang.Integer => Some(d.doubleValue())
-          case s: String => try Some(s.toDouble) catch case _: Throwable => None
-          case _ => None
+          case s: String            =>
+            try Some(s.toDouble)
+            catch
+              case _: Throwable => None
+              case _            => None
         }
 
       def docToEvent(doc: Document): DashboardEvent =
         // eventId and customerId prefer numeric types; fallback to 0
-        val eventId = asOptInt(doc, "eventId").getOrElse(Option(doc.getObjectId("_id")).map(_ => 0).getOrElse(0))
+        val eventId = asOptInt(
+          doc,
+          "eventId"
+        ).getOrElse(Option(doc.getObjectId("_id")).map(_ => 0).getOrElse(0))
         val customerId = asOptInt(doc, "customerId").getOrElse(0)
 
         val timestampStr = Option(doc.get("timestamp")) match
-          case Some(d: Date) => Instant.ofEpochMilli(d.getTime).toString
-          case Some(s: String) => try Instant.parse(s).toString catch case _: Throwable => s
-          case Some(l: java.lang.Long) => Instant.ofEpochMilli(l.longValue()).toString
-          case _ => Instant.now.toString
+          case Some(d: Date)   => Instant.ofEpochMilli(d.getTime).toString
+          case Some(s: String) =>
+            try Instant.parse(s).toString
+            catch
+              case _: Throwable            => s
+              case Some(l: java.lang.Long) => Instant.ofEpochMilli(l.longValue()).toString
+              case _                       => Instant.now.toString
 
         val amountStr = Option(doc.get("amount")).map(_.toString).getOrElse("0.00")
 
-        val currency = asOptString(doc, "currency").getOrElse(asOptString(doc, "currencyCode").getOrElse(""))
+        val currency =
+          asOptString(doc, "currency").getOrElse(asOptString(doc, "currencyCode").getOrElse(""))
         val status = asOptString(doc, "status").getOrElse("")
         val paymentMethod = asOptString(doc, "paymentMethod").getOrElse("")
         val transactionCountry = asOptString(doc, "transactionCountry").getOrElse("")
@@ -106,7 +133,8 @@ object ExportDashboardDataset:
         val channel = asOptString(doc, "channel").getOrElse("")
         val deviceId = asOptString(doc, "deviceId").getOrElse("")
 
-        val riskScoreInt = asOptInt(doc, "riskScore").orElse(asOptDouble(doc, "riskScore").map(_.toInt)).getOrElse(0)
+        val riskScoreInt =
+          asOptInt(doc, "riskScore").orElse(asOptDouble(doc, "riskScore").map(_.toInt)).getOrElse(0)
         val riskDecision = asOptString(doc, "riskDecision").getOrElse("")
         val finalDecision = asOptString(doc, "finalDecision").getOrElse("")
 
@@ -131,7 +159,8 @@ object ExportDashboardDataset:
         val eventId = asOptInt(doc, "eventId").getOrElse(0)
         val customerId = asOptInt(doc, "customerId").getOrElse(0)
         val alertType = asOptString(doc, "alertType").getOrElse("")
-        val riskScore = asOptInt(doc, "riskScore").orElse(asOptDouble(doc, "riskScore").map(_.toInt)).getOrElse(0)
+        val riskScore =
+          asOptInt(doc, "riskScore").orElse(asOptDouble(doc, "riskScore").map(_.toInt)).getOrElse(0)
         DashboardAlert(eventId, customerId, alertType, riskScore)
 
       def docToViolation(doc: Document): DashboardViolation =
@@ -155,7 +184,9 @@ object ExportDashboardDataset:
       val outPath = Paths.get(cfg.app.outputDir.toString).resolve("dashboard_dataset.json")
       JsonWriters.writeJsonToFile(dataset, outPath)
 
-      println(s"ExportDashboardDataset: wrote ${events.size} events, ${alerts.size} alerts, ${violations.size} violations to $outPath")
+      println(
+        s"ExportDashboardDataset: wrote ${events.size} events, ${alerts.size} alerts, ${violations.size} violations to $outPath"
+      )
     finally
       client.close()
 

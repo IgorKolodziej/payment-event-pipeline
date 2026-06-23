@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard preview (static)</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Dashboard preview (static)</h1>
+    <p class="hint">This demo reads <code>out/dashboard_dataset.json</code>. Run exporter locally and serve repo root over HTTP (see README).</p>
+  </header>
+
+  <main>
+    <section id="summary" class="card">
+      <div class="metrics">
+        <div class="metric"><strong id="totalProcessed">-</strong><div>Total processed</div></div>
+        <div class="metric"><strong id="totalRejected">-</strong><div>Total rejected</div></div>
+        <div class="metric"><strong id="totalAlerts">-</strong><div>Total alerts</div></div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Decisions</h3>
+        <canvas id="decisionsChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Top countries</h3>
+        <canvas id="countriesChart"></canvas>
+      </div>
+
+      <div class="card full">
+        <h3>Events per day</h3>
+        <canvas id="timeseriesChart"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Alert breakdown</h3>
+        <ul id="alertList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
