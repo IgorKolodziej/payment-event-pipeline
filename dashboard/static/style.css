@@ -1,7 +1,0 @@
-body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,"Noto Sans",Helvetica; margin:18px;color:#0f172a}
-.card{background:#fff;border-radius:8px;padding:12px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,0.06)}
-.metrics{display:flex;gap:12px}
-.metric{flex:1}
-.metric strong{display:block;font-size:20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-.hint{color:#475569}
