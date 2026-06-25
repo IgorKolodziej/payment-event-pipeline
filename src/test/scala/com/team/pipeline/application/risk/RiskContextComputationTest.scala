@@ -1,18 +1,17 @@
-package com.team.pipeline.infrastructure.mongo
+package com.team.pipeline.application.risk
 
-import com.team.pipeline.domain.CustomerId
-import com.team.pipeline.domain.EventId
-import com.team.pipeline.application.risk.CustomerRiskContext
 import com.team.pipeline.domain.Currency
+import com.team.pipeline.domain.CustomerId
 import com.team.pipeline.domain.CustomerProfile
 import com.team.pipeline.domain.EnrichedPaymentEvent
+import com.team.pipeline.domain.EventId
 import com.team.pipeline.domain.EventStatus
 import com.team.pipeline.domain.FinalDecision
 import com.team.pipeline.domain.MerchantCategory
 import com.team.pipeline.domain.NormalizedPaymentEvent
 import com.team.pipeline.domain.PaymentChannel
 import com.team.pipeline.domain.PaymentMethod
-import com.team.pipeline.infrastructure.mongo.RiskContextComputation.HistoryEvent
+import com.team.pipeline.ports.RiskHistoryEvent
 import munit.FunSuite
 
 import java.time.Instant
@@ -68,8 +67,8 @@ class RiskContextComputationTest extends FunSuite:
       method: PaymentMethod = PaymentMethod.Card,
       deviceId: String = "device-old",
       finalDecision: FinalDecision = FinalDecision.Accepted
-  ): HistoryEvent =
-    HistoryEvent(
+  ): RiskHistoryEvent =
+    RiskHistoryEvent(
       eventId = EventId(id),
       timestamp = ts,
       amount = amount,

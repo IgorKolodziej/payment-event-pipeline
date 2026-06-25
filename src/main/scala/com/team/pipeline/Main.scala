@@ -8,6 +8,7 @@ import com.team.pipeline.application.pipeline.ProcessingPipeline
 import com.team.pipeline.application.reporting.RunSummary
 import com.team.pipeline.application.reporting.DashboardSnapshot
 import com.team.pipeline.application.reporting.toDashboardSnapshot
+import com.team.pipeline.application.risk.HistoryBackedRiskContextProvider
 import com.team.pipeline.application.risk.RiskPolicy
 import com.team.pipeline.application.validation.EmailHasher
 import com.team.pipeline.config.AppConfig
@@ -18,7 +19,7 @@ import com.team.pipeline.infrastructure.mongo.MongoAlertStore
 import com.team.pipeline.infrastructure.mongo.MongoEligibilityViolationStore
 import com.team.pipeline.infrastructure.mongo.MongoIndexInitializer
 import com.team.pipeline.infrastructure.mongo.MongoProcessedEventStore
-import com.team.pipeline.infrastructure.mongo.MongoRiskFeatureProvider
+import com.team.pipeline.infrastructure.mongo.MongoRiskHistoryProvider
 import com.team.pipeline.infrastructure.postgres.DoobieCustomerProfileLookup
 import com.team.pipeline.infrastructure.redpanda.RedpandaEventSource
 import com.team.pipeline.ports.EventSource
@@ -87,11 +88,14 @@ object Main extends IOApp.Simple:
         val processedCollection = database.getCollection(config.mongo.processedCollection)
         val alertsCollection = database.getCollection(config.mongo.alertsCollection)
         val violationsCollection = database.getCollection(config.mongo.violationsCollection)
+        val riskHistoryProvider = MongoRiskHistoryProvider(processedCollection)
+        val riskContextProvider =
+          HistoryBackedRiskContextProvider(riskHistoryProvider, riskPolicy)
 
         MongoIndexInitializer.initialize(database, config.mongo).as(
           ProcessingPipeline.Dependencies(
             customerLookup = DoobieCustomerProfileLookup(transactor),
-            riskFeatureProvider = MongoRiskFeatureProvider(processedCollection, riskPolicy),
+            riskContextProvider = riskContextProvider,
             processedEventStore = MongoProcessedEventStore(processedCollection),
             eligibilityViolationStore = MongoEligibilityViolationStore(violationsCollection),
             alertStore = MongoAlertStore(alertsCollection),
