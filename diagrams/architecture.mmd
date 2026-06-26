@@ -1,59 +1,80 @@
 flowchart LR
-  subgraph ING[Ingestia]
-    file[Plik: sample-data]
-    redpanda[Redpanda]
+  subgraph Ingest[Ingest]
+    file[FileReplayEventSource]
+    paced[PacedFileReplayEventSource]
+    redpanda[RedpandaEventSource]
+    publisher[PublishSampleEvents]
   end
 
-  subgraph PROC[Przetwarzanie]
+  subgraph Application[Application layer]
     parser[EventParser]
-    validator[EventValidator / Normalizer]
+    validator[EventValidator / EventNormalizer]
     enricher[EventEnricher]
     pipeline[ProcessingPipeline]
+    eligibility[EligibilityChecker]
+    riskContext[HistoryBackedRiskContextProvider]
     risk[RiskEngine / RiskPolicy]
     decision[PaymentDecisionEngine]
-    eligibility[EligibilityChecker]
+    reporting[RunSummary / DashboardSnapshot]
   end
 
-  subgraph STORE[Magazyny danych]
-    postgres[Postgres: ProcessedEventStore]
-    mongo[MongoDB: AlertStore & Violations]
+  subgraph Ports[Ports]
+    eventSource[EventSource]
+    profilePort[CustomerProfileLookup]
+    historyPort[RiskHistoryProvider]
+    processedPort[ProcessedEventStore]
+    violationsPort[EligibilityViolationStore]
+    alertsPort[AlertStore]
   end
 
-  subgraph EXT[Zewnętrzne usługi]
-    profileApi[CustomerProfileLookup]
-    featureApi[RiskFeatureProvider]
+  subgraph Infrastructure[Infrastructure adapters]
+    postgres[DoobieCustomerProfileLookup / PostgreSQL]
+    mongoHistory[MongoRiskHistoryProvider]
+    mongoProcessed[MongoProcessedEventStore]
+    mongoViolations[MongoEligibilityViolationStore]
+    mongoAlerts[MongoAlertStore]
+    mongoIndexes[MongoIndexInitializer]
   end
 
-  subgraph MON[Monitoring / Raporty]
-    dashboard[DashboardSnapshot / RunSummary]
+  subgraph Stores[Local Docker services]
+    pg[(PostgreSQL)]
+    mongo[(MongoDB)]
+    rp[(Redpanda)]
   end
 
-  subgraph TOOLS[Narzędzia]
-    publishTool[PublishSampleEvents]
-    appConfig[AppConfig]
-  end
+  file --> eventSource
+  paced --> eventSource
+  redpanda --> eventSource
+  publisher --> rp
+  rp --> redpanda
 
-  file --> parser
-  redpanda --> parser
-
+  eventSource --> pipeline
+  pipeline --> parser
   parser --> validator
   validator --> enricher
-  enricher --> pipeline
+  enricher --> profilePort
+  profilePort --> postgres
+  postgres --> pg
+
+  enricher --> riskContext
+  riskContext --> historyPort
+  historyPort --> mongoHistory
+  mongoHistory --> mongo
 
   pipeline --> eligibility
   pipeline --> risk
   pipeline --> decision
 
-  eligibility --> mongo
-  risk --> mongo
-  decision --> postgres
+  decision --> processedPort
+  eligibility --> violationsPort
+  risk --> alertsPort
 
-  enricher --> profileApi
-  risk --> featureApi
+  processedPort --> mongoProcessed
+  violationsPort --> mongoViolations
+  alertsPort --> mongoAlerts
+  mongoProcessed --> mongo
+  mongoViolations --> mongo
+  mongoAlerts --> mongo
+  mongoIndexes --> mongo
 
-  postgres --> dashboard
-  mongo --> dashboard
-
-  publishTool --> file
-  appConfig -.-> parser
-  appConfig -.-> pipeline
+  pipeline --> reporting

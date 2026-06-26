@@ -1,10 +1,12 @@
 flowchart LR
-  subgraph Sources[Sources]
-    file[File_sample_data]
-    redpanda[Redpanda_stream]
+  subgraph Sources[Input sources]
+    file[JSONL file replay]
+    paced[Paced JSONL replay]
+    redpanda[Redpanda stream]
   end
 
   file --> ES[EventSource]
+  paced --> ES
   redpanda --> ES
 
   ES --> Parser[EventParser]
@@ -12,24 +14,33 @@ flowchart LR
   Validator --> Enricher[EventEnricher]
   Enricher --> Pipeline[ProcessingPipeline]
 
+  subgraph Lookups[External data]
+    profiles[CustomerProfileLookup / PostgreSQL]
+    history[RiskHistoryProvider / MongoDB]
+  end
+
+  Enricher --> profiles
+  Pipeline --> RiskContext[RiskContextProvider]
+  RiskContext --> history
+
   Pipeline --> Eligibility[EligibilityChecker]
   Pipeline --> Risk[RiskEngine]
   Pipeline --> Decision[PaymentDecisionEngine]
 
-  Eligibility -->|violations| EligibilityStore[EligibilityViolationStore_Postgres_Mongo]
-  Risk -->|alerts| AlertStore[AlertStore_Mongo]
-  Decision --> ProcessedStore[ProcessedEventStore_Postgres]
-
-  ProcessedStore --> Reporting[DashboardSnapshot_RunSummary]
-
-  subgraph Integrations[External_Integrations]
-    ProfileLookup[CustomerProfileLookup]
-    FeatureProvider[RiskFeatureProvider]
+  subgraph Mongo[MongoDB stores]
+    processed[processed_transactions]
+    violations[eligibility_violations]
+    alerts[alerts]
   end
 
-  Enricher --> ProfileLookup
-  Risk --> FeatureProvider
+  Decision --> processed
+  Eligibility --> violations
+  Risk --> alerts
 
-  Tools[PublishSampleEvents] --> file
+  processed --> Reporting[RunSummary / dashboard_snapshot.json]
+  alerts --> Reporting
+  violations --> Reporting
+
+  Publisher[PublishSampleEvents] --> redpanda
   Config[AppConfig] -.-> ES
   Config -.-> Pipeline
