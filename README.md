@@ -35,25 +35,58 @@ The project is backend-focused and intentionally close to professional event-pro
 
 ## Architecture
 
-```text
-EventSource(file, paced-file, Redpanda)
-  -> EventParser
-  -> EventValidator / EventNormalizer
-  -> CustomerProfileLookup(PostgreSQL)
-  -> EventEnricher
-  -> RiskContextProvider
-     -> RiskHistoryProvider(MongoDB)
-  -> EligibilityChecker + RiskEngine
-  -> PaymentDecisionEngine
-  -> MongoDB stores
-  -> RunSummary + dashboard snapshot JSON
+```mermaid
+flowchart LR
+  subgraph Sources[Input sources]
+    file[JSONL file replay]
+    paced[Paced JSONL replay]
+    redpanda[Redpanda topic]
+  end
+
+  file --> source[EventSource]
+  paced --> source
+  redpanda --> source
+  source --> pipeline[ProcessingPipeline]
+
+  pipeline --> parser[EventParser]
+  parser --> validator[EventValidator / EventNormalizer]
+  validator --> enricher[EventEnricher]
+
+  enricher --> lookup[CustomerProfileLookup]
+  lookup --> postgres[(PostgreSQL customers)]
+
+  enricher --> context[RiskContextProvider]
+  context --> history[RiskHistoryProvider]
+  history --> processed[(MongoDB processed_transactions)]
+
+  context --> decision[PaymentDecisionEngine]
+  enricher --> decision
+  decision --> eligibility[EligibilityChecker]
+  decision --> risk[RiskEngine]
+  decision --> assessment[PaymentAssessment]
+
+  assessment --> processedStore[ProcessedEventStore]
+  assessment --> violationStore[EligibilityViolationStore]
+  assessment --> alertStore[AlertStore]
+
+  processedStore --> processed
+  violationStore --> violations[(MongoDB eligibility_violations)]
+  alertStore --> alerts[(MongoDB alerts)]
+
+  pipeline --> summary[RunSummary]
+  summary --> report[out/report.json]
+  summary --> snapshot[out/dashboard_snapshot.json]
+
+  publisher[PublishSampleEvents] --> redpanda
+  config[AppConfig] -.-> source
+  config -.-> pipeline
 ```
 
 The core pipeline depends on small ports, not concrete infrastructure. File replay, paced replay, Redpanda, PostgreSQL, and MongoDB live behind adapters in `infrastructure`.
 
 Risk context is computed in `application.risk` from historical processed events loaded through a Mongo-backed `RiskHistoryProvider`.
 
-Additional Mermaid sources live in `diagrams/system.mmd` and `diagrams/architecture.mmd`.
+The same high-level flow lives in `diagrams/system.mmd`; a more detailed component view lives in `diagrams/architecture.mmd`.
 
 ## Technology
 

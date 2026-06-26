@@ -2,45 +2,43 @@ flowchart LR
   subgraph Sources[Input sources]
     file[JSONL file replay]
     paced[Paced JSONL replay]
-    redpanda[Redpanda stream]
+    redpanda[Redpanda topic]
   end
 
-  file --> ES[EventSource]
-  paced --> ES
-  redpanda --> ES
+  file --> source[EventSource]
+  paced --> source
+  redpanda --> source
+  source --> pipeline[ProcessingPipeline]
 
-  ES --> Parser[EventParser]
-  Parser --> Validator[EventValidator / EventNormalizer]
-  Validator --> Enricher[EventEnricher]
-  Enricher --> Pipeline[ProcessingPipeline]
+  pipeline --> parser[EventParser]
+  parser --> validator[EventValidator / EventNormalizer]
+  validator --> enricher[EventEnricher]
 
-  subgraph Lookups[External data]
-    profiles[CustomerProfileLookup / PostgreSQL]
-    history[RiskHistoryProvider / MongoDB]
-  end
+  enricher --> lookup[CustomerProfileLookup]
+  lookup --> postgres[(PostgreSQL customers)]
 
-  Enricher --> profiles
-  Pipeline --> RiskContext[RiskContextProvider]
-  RiskContext --> history
+  enricher --> context[RiskContextProvider]
+  context --> history[RiskHistoryProvider]
+  history --> processed[(MongoDB processed_transactions)]
 
-  Pipeline --> Eligibility[EligibilityChecker]
-  Pipeline --> Risk[RiskEngine]
-  Pipeline --> Decision[PaymentDecisionEngine]
+  context --> decision[PaymentDecisionEngine]
+  enricher --> decision
+  decision --> eligibility[EligibilityChecker]
+  decision --> risk[RiskEngine]
+  decision --> assessment[PaymentAssessment]
 
-  subgraph Mongo[MongoDB stores]
-    processed[processed_transactions]
-    violations[eligibility_violations]
-    alerts[alerts]
-  end
+  assessment --> processedStore[ProcessedEventStore]
+  assessment --> violationStore[EligibilityViolationStore]
+  assessment --> alertStore[AlertStore]
 
-  Decision --> processed
-  Eligibility --> violations
-  Risk --> alerts
+  processedStore --> processed
+  violationStore --> violations[(MongoDB eligibility_violations)]
+  alertStore --> alerts[(MongoDB alerts)]
 
-  processed --> Reporting[RunSummary / dashboard_snapshot.json]
-  alerts --> Reporting
-  violations --> Reporting
+  pipeline --> summary[RunSummary]
+  summary --> report[out/report.json]
+  summary --> snapshot[out/dashboard_snapshot.json]
 
-  Publisher[PublishSampleEvents] --> redpanda
-  Config[AppConfig] -.-> ES
-  Config -.-> Pipeline
+  publisher[PublishSampleEvents] --> redpanda
+  config[AppConfig] -.-> source
+  config -.-> pipeline

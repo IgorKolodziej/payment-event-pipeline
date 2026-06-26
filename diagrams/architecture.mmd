@@ -1,5 +1,12 @@
 flowchart LR
-  subgraph Ingest[Ingest]
+  subgraph Runtime[Runtime wiring]
+    main[Main]
+    config[AppConfig]
+    hikari[HikariTransactor]
+    mongoClient[MongoClient]
+  end
+
+  subgraph Sources[Input adapters]
     file[FileReplayEventSource]
     paced[PacedFileReplayEventSource]
     redpanda[RedpandaEventSource]
@@ -7,15 +14,17 @@ flowchart LR
   end
 
   subgraph Application[Application layer]
+    pipeline[ProcessingPipeline]
     parser[EventParser]
     validator[EventValidator / EventNormalizer]
     enricher[EventEnricher]
-    pipeline[ProcessingPipeline]
-    eligibility[EligibilityChecker]
     riskContext[HistoryBackedRiskContextProvider]
-    risk[RiskEngine / RiskPolicy]
     decision[PaymentDecisionEngine]
-    reporting[RunSummary / DashboardSnapshot]
+    eligibility[EligibilityChecker]
+    risk[RiskEngine / RiskPolicy]
+    mapper[ProcessedEventMapper]
+    summary[RunSummary / DashboardSnapshot]
+    writers[JsonWriters]
   end
 
   subgraph Ports[Ports]
@@ -27,8 +36,8 @@ flowchart LR
     alertsPort[AlertStore]
   end
 
-  subgraph Infrastructure[Infrastructure adapters]
-    postgres[DoobieCustomerProfileLookup / PostgreSQL]
+  subgraph Adapters[Infrastructure adapters]
+    postgresLookup[DoobieCustomerProfileLookup]
     mongoHistory[MongoRiskHistoryProvider]
     mongoProcessed[MongoProcessedEventStore]
     mongoViolations[MongoEligibilityViolationStore]
@@ -37,10 +46,21 @@ flowchart LR
   end
 
   subgraph Stores[Local Docker services]
-    pg[(PostgreSQL)]
-    mongo[(MongoDB)]
+    pg[(PostgreSQL customers)]
+    mongo[(MongoDB processed state and risk history)]
     rp[(Redpanda)]
   end
+
+  subgraph Outputs[Generated artifacts]
+    report[out/report.json]
+    snapshot[out/dashboard_snapshot.json]
+  end
+
+  config -.-> main
+  main --> hikari
+  main --> mongoClient
+  main --> eventSource
+  main --> pipeline
 
   file --> eventSource
   paced --> eventSource
@@ -52,22 +72,26 @@ flowchart LR
   pipeline --> parser
   parser --> validator
   validator --> enricher
+
   enricher --> profilePort
-  profilePort --> postgres
-  postgres --> pg
+  profilePort --> postgresLookup
+  hikari --> postgresLookup
+  postgresLookup --> pg
 
   enricher --> riskContext
   riskContext --> historyPort
   historyPort --> mongoHistory
   mongoHistory --> mongo
 
-  pipeline --> eligibility
-  pipeline --> risk
-  pipeline --> decision
+  riskContext --> decision
+  enricher --> decision
+  decision --> eligibility
+  decision --> risk
+  decision --> mapper
 
-  decision --> processedPort
-  eligibility --> violationsPort
-  risk --> alertsPort
+  mapper --> processedPort
+  decision --> violationsPort
+  decision --> alertsPort
 
   processedPort --> mongoProcessed
   violationsPort --> mongoViolations
@@ -76,5 +100,9 @@ flowchart LR
   mongoViolations --> mongo
   mongoAlerts --> mongo
   mongoIndexes --> mongo
+  mongoClient --> mongoIndexes
 
-  pipeline --> reporting
+  pipeline --> summary
+  summary --> writers
+  writers --> report
+  writers --> snapshot
