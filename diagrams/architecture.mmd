@@ -1,59 +1,108 @@
 flowchart LR
-  subgraph ING[Ingestia]
-    file[Plik: sample-data]
-    redpanda[Redpanda]
+  subgraph Runtime[Runtime wiring]
+    main[Main]
+    config[AppConfig]
+    hikari[HikariTransactor]
+    mongoClient[MongoClient]
   end
 
-  subgraph PROC[Przetwarzanie]
-    parser[EventParser]
-    validator[EventValidator / Normalizer]
-    enricher[EventEnricher]
+  subgraph Sources[Input adapters]
+    file[FileReplayEventSource]
+    paced[PacedFileReplayEventSource]
+    redpanda[RedpandaEventSource]
+    publisher[PublishSampleEvents]
+  end
+
+  subgraph Application[Application layer]
     pipeline[ProcessingPipeline]
-    risk[RiskEngine / RiskPolicy]
+    parser[EventParser]
+    validator[EventValidator / EventNormalizer]
+    enricher[EventEnricher]
+    riskContext[HistoryBackedRiskContextProvider]
     decision[PaymentDecisionEngine]
     eligibility[EligibilityChecker]
+    risk[RiskEngine / RiskPolicy]
+    mapper[ProcessedEventMapper]
+    summary[RunSummary / DashboardSnapshot]
+    writers[JsonWriters]
   end
 
-  subgraph STORE[Magazyny danych]
-    postgres[Postgres: ProcessedEventStore]
-    mongo[MongoDB: AlertStore & Violations]
+  subgraph Ports[Ports]
+    eventSource[EventSource]
+    profilePort[CustomerProfileLookup]
+    historyPort[RiskHistoryProvider]
+    processedPort[ProcessedEventStore]
+    violationsPort[EligibilityViolationStore]
+    alertsPort[AlertStore]
   end
 
-  subgraph EXT[Zewnętrzne usługi]
-    profileApi[CustomerProfileLookup]
-    featureApi[RiskFeatureProvider]
+  subgraph Adapters[Infrastructure adapters]
+    postgresLookup[DoobieCustomerProfileLookup]
+    mongoHistory[MongoRiskHistoryProvider]
+    mongoProcessed[MongoProcessedEventStore]
+    mongoViolations[MongoEligibilityViolationStore]
+    mongoAlerts[MongoAlertStore]
+    mongoIndexes[MongoIndexInitializer]
   end
 
-  subgraph MON[Monitoring / Raporty]
-    dashboard[DashboardSnapshot / RunSummary]
+  subgraph Stores[Local Docker services]
+    pg[(PostgreSQL customers)]
+    mongo[(MongoDB processed state and risk history)]
+    rp[(Redpanda)]
   end
 
-  subgraph TOOLS[Narzędzia]
-    publishTool[PublishSampleEvents]
-    appConfig[AppConfig]
+  subgraph Outputs[Generated artifacts]
+    report[out/report.json]
+    snapshot[out/dashboard_snapshot.json]
   end
 
-  file --> parser
-  redpanda --> parser
+  config -.-> main
+  main --> hikari
+  main --> mongoClient
+  main --> eventSource
+  main --> pipeline
 
+  file --> eventSource
+  paced --> eventSource
+  redpanda --> eventSource
+  publisher --> rp
+  rp --> redpanda
+
+  eventSource --> pipeline
+  pipeline --> parser
   parser --> validator
   validator --> enricher
-  enricher --> pipeline
 
-  pipeline --> eligibility
-  pipeline --> risk
-  pipeline --> decision
+  enricher --> profilePort
+  profilePort --> postgresLookup
+  hikari --> postgresLookup
+  postgresLookup --> pg
 
-  eligibility --> mongo
-  risk --> mongo
-  decision --> postgres
+  enricher --> riskContext
+  riskContext --> historyPort
+  historyPort --> mongoHistory
+  mongoHistory --> mongo
 
-  enricher --> profileApi
-  risk --> featureApi
+  riskContext --> decision
+  enricher --> decision
+  decision --> eligibility
+  decision --> risk
+  decision --> mapper
 
-  postgres --> dashboard
-  mongo --> dashboard
+  mapper --> processedPort
+  decision --> violationsPort
+  decision --> alertsPort
 
-  publishTool --> file
-  appConfig -.-> parser
-  appConfig -.-> pipeline
+  processedPort --> mongoProcessed
+  violationsPort --> mongoViolations
+  alertsPort --> mongoAlerts
+  mongoProcessed --> mongo
+  mongoViolations --> mongo
+  mongoAlerts --> mongo
+  mongoIndexes --> mongo
+  mongoClient --> mongoIndexes
+
+  pipeline --> summary
+  summary --> writers
+  writers --> report
+  writers --> snapshot

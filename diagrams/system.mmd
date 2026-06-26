@@ -1,35 +1,44 @@
 flowchart LR
-  subgraph Sources[Sources]
-    file[File_sample_data]
-    redpanda[Redpanda_stream]
+  subgraph Sources[Input sources]
+    file[JSONL file replay]
+    paced[Paced JSONL replay]
+    redpanda[Redpanda topic]
   end
 
-  file --> ES[EventSource]
-  redpanda --> ES
+  file --> source[EventSource]
+  paced --> source
+  redpanda --> source
+  source --> pipeline[ProcessingPipeline]
 
-  ES --> Parser[EventParser]
-  Parser --> Validator[EventValidator / EventNormalizer]
-  Validator --> Enricher[EventEnricher]
-  Enricher --> Pipeline[ProcessingPipeline]
+  pipeline --> parser[EventParser]
+  parser --> validator[EventValidator / EventNormalizer]
+  validator --> enricher[EventEnricher]
 
-  Pipeline --> Eligibility[EligibilityChecker]
-  Pipeline --> Risk[RiskEngine]
-  Pipeline --> Decision[PaymentDecisionEngine]
+  enricher --> lookup[CustomerProfileLookup]
+  lookup --> postgres[(PostgreSQL customers)]
 
-  Eligibility -->|violations| EligibilityStore[EligibilityViolationStore_Postgres_Mongo]
-  Risk -->|alerts| AlertStore[AlertStore_Mongo]
-  Decision --> ProcessedStore[ProcessedEventStore_Postgres]
+  enricher --> context[RiskContextProvider]
+  context --> history[RiskHistoryProvider]
+  history --> processed[(MongoDB processed_transactions)]
 
-  ProcessedStore --> Reporting[DashboardSnapshot_RunSummary]
+  context --> decision[PaymentDecisionEngine]
+  enricher --> decision
+  decision --> eligibility[EligibilityChecker]
+  decision --> risk[RiskEngine]
+  decision --> assessment[PaymentAssessment]
 
-  subgraph Integrations[External_Integrations]
-    ProfileLookup[CustomerProfileLookup]
-    FeatureProvider[RiskFeatureProvider]
-  end
+  assessment --> processedStore[ProcessedEventStore]
+  assessment --> violationStore[EligibilityViolationStore]
+  assessment --> alertStore[AlertStore]
 
-  Enricher --> ProfileLookup
-  Risk --> FeatureProvider
+  processedStore --> processed
+  violationStore --> violations[(MongoDB eligibility_violations)]
+  alertStore --> alerts[(MongoDB alerts)]
 
-  Tools[PublishSampleEvents] --> file
-  Config[AppConfig] -.-> ES
-  Config -.-> Pipeline
+  pipeline --> summary[RunSummary]
+  summary --> report[out/report.json]
+  summary --> snapshot[out/dashboard_snapshot.json]
+
+  publisher[PublishSampleEvents] --> redpanda
+  config[AppConfig] -.-> source
+  config -.-> pipeline
